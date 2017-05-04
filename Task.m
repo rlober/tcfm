@@ -36,6 +36,19 @@ classdef Task
 
             obj.tau = pinv(obj.E)*obj.f; 
         end
+        
+        function acc_des = get_desired_acc(obj, t)
+           acc_ref = 0;
+           vel_ref = 0;
+           pos_ref = 0;
+           
+           pos_real = ;
+           vel_real = ;
+           
+           pos_err = pos_real - pos_ref;
+           vel_err = vel_real - vel_ref;
+           acc_des = acc_ref - (obj.kp*pos_err + obj.kd*vel_err);
+        end
     end
     
 end
