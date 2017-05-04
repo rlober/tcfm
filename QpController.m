@@ -1,4 +1,4 @@
-classdef QpController
+classdef QpController < handle
     %QP_CONTROLLER Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -16,7 +16,7 @@ classdef QpController
         function obj = QpController(robot)
             obj.R = robot;
             
-            obj.tasks = [Task(1.0, 10.0, 2.0)];
+            obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2)};
         end
         
         function tau = compute_tau(obj, t, q, qd)
@@ -32,9 +32,9 @@ classdef QpController
             obj.E = [];
             obj.f = [];
             for i = 1:size(obj.tasks, 1)
-                obj.tasks(i).update(t, q, qd);
-                obj.E = [obj.E; obj.tasks(i).weight*obj.tasks(i).E];
-                obj.f = [obj.f; obj.tasks(i).weight*obj.tasks(i).f];
+                obj.tasks{i}.update(t, q, qd);
+                obj.E = [obj.E; obj.tasks{i}.weight*obj.tasks{i}.E];
+                obj.f = [obj.f; obj.tasks{i}.weight*obj.tasks{i}.f];
             end
         end
         

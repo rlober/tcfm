@@ -13,13 +13,16 @@ tau = zeros(robot.n,1);
 
 controller = QpController(robot);
 
-tspan = [0.0 1.0];
+step = 0.01;
+tspan = [0.0 : step : 1.0];
 y0 = [q'; zeros(robot.n,1)];
 disp('simulating')
-[t, y] = ode45(@(t,y) dynamics(t,y,robot, controller, false), tspan, y0);
-
+[t, y] = ode15s(@(t,y) dynamics(t,y,robot, controller, false), tspan, y0);
+q_traj = y(:,1:robot.n);
 disp('plotting')
-robot.plot(y(:,1:robot.n))
+tcp_traj = robot.fkine(q_traj);
+end_point = tcp_traj(:,:,end)
+robot.plot(q_traj)
 % nsteps = size(t,1);
 % for i = 1:nsteps
 %     qnew = y(i, 1:robot.n);
