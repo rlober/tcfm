@@ -25,7 +25,7 @@ classdef QpController < handle
         
         function tau = compute_tau(obj, t, q, qd)
             obj.update(t, q, qd)
-            tau = obj.solve_qp;
+            tau = obj.solve_unconstrained_qp();
         end
         
         function update(obj, t, q, qd)
@@ -42,8 +42,16 @@ classdef QpController < handle
             end
         end
         
-        function tau = solve_qp(obj)
+        function update_constraints(obj)
+            
+        end
+        
+        function tau = solve_unconstrained_qp(obj)
            tau = pinv(obj.E)*obj.f;
+        end
+        
+        function tau = solve_qp(obj)
+           obj.update_constraints();
         end
        
         
