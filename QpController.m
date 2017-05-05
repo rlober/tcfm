@@ -19,6 +19,10 @@ classdef QpController < handle
             obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2)};
         end
         
+        function tau = zero_torque(obj, t, q, qd)
+           tau = zeros(obj.R.n, 1); 
+        end
+        
         function tau = compute_tau(obj, t, q, qd)
             obj.update(t, q, qd)
             tau = obj.solve_qp;

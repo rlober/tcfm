@@ -1,30 +1,32 @@
 clear all; 
 clc;
 
-
-    
-
 %% Load model
 mdl_puma560;
 robot = p560;
 
-q = qn;
-tau = zeros(robot.n,1);
-
+%% Create controller
 controller = QpController(robot);
 
+%% Simulate execution
+% time scale
 step = 0.01;
-tspan = [0.0 : step : 1.0];
-y0 = [q'; zeros(robot.n,1)];
+tend = 1.5;
+tspan = [0.0 : step : tend];
+
+% initial state
+y0 = [qn'; zeros(robot.n,1)];
+
+% friction
+use_friction = false; % bug slows down integ
+
+% foward dynamics integration
 disp('simulating')
-[t, y] = ode15s(@(t,y) dynamics(t,y,robot, controller, false), tspan, y0);
+[t, y] = ode23tb(@(t,y) dynamics(t,y,robot, controller, use_friction), tspan, y0);
 q_traj = y(:,1:robot.n);
+
+%% Plot results
 disp('plotting')
 tcp_traj = robot.fkine(q_traj);
 end_point = tcp_traj(:,:,end)
 robot.plot(q_traj)
-% nsteps = size(t,1);
-% for i = 1:nsteps
-%     qnew = y(i, 1:robot.n);
-%     robot.animate(qnew);
-% end

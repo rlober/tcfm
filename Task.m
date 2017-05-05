@@ -34,7 +34,7 @@ classdef Task < handle
             g = obj.R.gravload(q)';
 
             obj.E = obj.J*Minv;
-            obj.f = obj.acc_des - dJdq - obj.J*Minv*(n+g);
+            obj.f = obj.acc_des - dJdq - obj.J*Minv*(n-g);
 
             obj.tau = pinv(obj.E)*obj.f; 
         end
