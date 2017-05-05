@@ -16,7 +16,7 @@ classdef QpController < handle
         function obj = QpController(robot)
             obj.R = robot;
             
-            obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2)};
+            obj.tasks = {EEPoseTask(obj.R, 1.0, 10.0, 0.2)};
         end
         
         function tau = zero_torque(obj, t, q, qd)

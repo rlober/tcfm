@@ -23,7 +23,7 @@ classdef EEPoseTask < Task
            vel_ref = zeros(6,1);
            pos_ref = [1 0 0 0.4; 0 1 0 -0.5; 0 0 1 0.4; 0 0 0 1];
            
-           pos_real = obj.R.tool;
+           pos_real = obj.R.fkine(q);
            vel_real = (obj.R.jacob0(q)*qd');
            
            pos_err = pos_real - pos_ref;

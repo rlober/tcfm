@@ -11,7 +11,7 @@ controller = QpController(robot);
 %% Simulate execution
 % time scale
 step = 0.01;
-tend = 1.5;
+tend = 2.0;
 tspan = [0.0 : step : tend];
 
 % initial state

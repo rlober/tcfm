@@ -6,8 +6,8 @@ function dydt = dynamics(t, y, robot, controller, use_friction)
     n_dof = robot.n;
     q = y(1:n_dof,:)';
     qd = y(n_dof+1:end, 1)';
-%     tau = controller.compute_tau(t, q, qd);
-    tau = controller.zero_torque(t, q, qd);
+    tau = controller.compute_tau(t, q, qd);
+%     tau = controller.zero_torque(t, q, qd);
 
     disp('tau = ')
     disp(tau')
