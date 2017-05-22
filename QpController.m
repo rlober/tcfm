@@ -52,6 +52,18 @@ classdef QpController < handle
         
         function tau = solve_qp(obj)
            obj.update_constraints();
+%            [tau,j_val,EXITFLAG] = quadprog(obj.H,obj.f,obj.A,obj.b);
+%              if EXITFLAG == 0
+%                 disp('Maximum number of iterations exceeded.')
+%              elseif EXITFLAG == -2
+%                 disp('No feasible point found.')
+%              elseif EXITFLAG == -3
+%                 disp('Problem is unbounded.')
+%              elseif EXITFLAG == -6
+%                  disp('Non-convex problem detected.')
+%              end
+
+                 
         end
        
         
