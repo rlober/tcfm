@@ -29,8 +29,8 @@ classdef Task < handle
             dJdq = obj.get_dJdq(q, qd);
             obj.acc_des = obj.get_desired_acc(t, q, qd);
             
-            disp('acc_des = ')
-            disp(obj.acc_des')
+%             disp('acc_des = ')
+%             disp(obj.acc_des')
             
             Minv = inv(obj.R.inertia(q));
             n = obj.R.coriolis(q, qd) * qd';

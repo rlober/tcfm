@@ -1,4 +1,6 @@
-function dydt = dynamics(t, y, robot, controller, use_friction)
+function dydt = dynamics(t, y, use_friction)
+global robot;
+global controller;
 %DYNAMICS Summary of this function goes here
 %   Detailed explanation goes here
     disp('t = ')
@@ -9,8 +11,8 @@ function dydt = dynamics(t, y, robot, controller, use_friction)
     tau = controller.compute_tau(t, q, qd);
 %     tau = controller.zero_torque(t, q, qd);
 
-    disp('tau = ')
-    disp(tau')
+%     disp('tau = ')
+%     disp(tau')
     M = robot.inertia(q);
     Minv = inv(M);
     n = robot.coriolis(q, qd) * qd';
