@@ -17,12 +17,14 @@ classdef QpController < handle
         h;
         qp_options;
         using_constraints;
+        torque_limit;
     end
     
     methods
-        function obj = QpController(using_constraints)
+        function obj = QpController(using_constraints, torque_limit)
             global robot;
             obj.R = robot;
+            obj.torque_limit = torque_limit;
             obj.using_constraints = using_constraints;
             obj.qp_options = optimset('Algorithm','interior-point-convex', 'Display', 'off');
 
@@ -31,7 +33,8 @@ classdef QpController < handle
 %             obj.tasks = {PostureTask(obj.R, 1.0, 10.0, 0.2)};
             obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2), PostureTask(obj.R, 0.001, 10.0, 0.2)};
 
-            obj.constraints = {TorqueConstraint(obj.R, -40, 40)};
+            obj.constraints = {TorqueConstraint(obj.R, -obj.torque_limit, obj.torque_limit)};
+%             obj.constraints = {JointPositionConstraint(obj.R, obj.R.qlim(:,1), obj.R.qlim(:,2))};
         end
         
         function tau = zero_torque(obj, t, q, qd)
@@ -89,18 +92,13 @@ classdef QpController < handle
                 disp('Maximum number of iterations exceeded.')
              elseif EXITFLAG == -2
                 disp('No feasible point found.')
+                tau = [];
              elseif EXITFLAG == -3
                 disp('Problem is unbounded.')
              elseif EXITFLAG == -6
                  disp('Non-convex problem detected.')
-             end
-
-                 
-        end
-       
-        
-        
+             end      
+        end 
     end
-    
 end
 
