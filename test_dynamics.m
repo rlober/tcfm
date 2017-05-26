@@ -11,6 +11,10 @@ using_constraints = true;
 global controller;
 controller = QpController(using_constraints);
 
+global torques;
+torques = [];
+global torque_times;
+torque_times = [];
 %% Simulate execution
 % time scale
 step = 0.01;

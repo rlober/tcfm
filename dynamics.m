@@ -2,6 +2,8 @@ function dydt = dynamics(t, y, use_friction)
 global robot;
 global controller;
 global stop_integration;
+global torques;
+global torque_times;
 %DYNAMICS Summary of this function goes here
 %   Detailed explanation goes here
     disp('t = ')
