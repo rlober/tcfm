@@ -33,8 +33,9 @@ classdef QpController < handle
 %             obj.tasks = {PostureTask(obj.R, 1.0, 10.0, 0.2)};
             obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2), PostureTask(obj.R, 0.001, 10.0, 0.2)};
 
-            obj.constraints = {TorqueConstraint(obj.R, -obj.torque_limit, obj.torque_limit)};
+%             obj.constraints = {TorqueConstraint(obj.R, -obj.torque_limit, obj.torque_limit)};
 %             obj.constraints = {JointPositionConstraint(obj.R, obj.R.qlim(:,1), obj.R.qlim(:,2))};
+            obj.constraints = {TorqueConstraint(obj.R, -obj.torque_limit, obj.torque_limit), JointPositionConstraint(obj.R, obj.R.qlim(:,1), obj.R.qlim(:,2))};
         end
         
         function tau = zero_torque(obj, t, q, qd)
