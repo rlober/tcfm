@@ -25,8 +25,12 @@ use_friction = false; % bug slows down integ
 
 % foward dynamics integration
 disp('simulating')
+global stop_integration;
+stop_integration = false;
+opts=odeset('Events',@odeStop);
 [t, y] = ode45(@(t,y) dynamics(t,y, use_friction), tspan, y0);
-% [t, y] = simpleDynamicsIntegration( robot, controller, use_friction, tspan, y0 );
+size(t)
+% [t, y] = simpleDynamicsIntegration( use_friction, tspan, y0 );
 q_traj = y(:,1:robot.n);
 
 %% Plot results
