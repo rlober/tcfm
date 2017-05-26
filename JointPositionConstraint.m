@@ -17,7 +17,7 @@ classdef JointPositionConstraint < Constraint
 %             if dt < 0.001 
 %                 dt = 0.001;
 %             end
-            dt = 0.01;
+            dt = 0.2;
             Minv = inv(obj.R.inertia(q));
             n = obj.R.coriolis(q, qd) * qd';
             g = obj.R.gravload(q)';
