@@ -74,7 +74,9 @@ classdef QpController < handle
         end
         
         function update_constraints(obj, t, q, qd)
-            for i = 1:size(obj.constraints)
+            obj.G = [];
+            obj.h = [];
+            for i = 1:size(obj.constraints,2)
                obj.constraints{i}.update(t, q, qd);
                obj.G = [obj.G; obj.constraints{i}.G];
                obj.h = [obj.h; obj.constraints{i}.h];
