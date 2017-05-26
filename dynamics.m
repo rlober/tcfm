@@ -19,18 +19,20 @@ global torque_times;
     else
         torques = [torques; tau'];
         torque_times = [torque_times; t];
-        hits_lb = q == robot.qlim(:,1)';
+        hits_lb = q <= robot.qlim(:,1)';
         if sum(hits_lb) > 0
             for i = 1:n_dof
                 if hits_lb(i)
-                    fprintf('Joint %i hitting its lower bound %d\n', i, robot.qlim(i,1))
+%                     q(i) = robot.qlim(i,1);
+                    fprintf('Joint %i hitting its lower bound %2.2d\n', i, robot.qlim(i,1))
                 end
             end
         end
-        hits_ub = q == robot.qlim(:,2)';
+        hits_ub = q >= robot.qlim(:,2)';
         if sum(hits_ub) > 0
             for i = 1:n_dof
                 if hits_ub(i)
+%                     q(i) = robot.qlim(i,2);
                     fprintf('Joint %i hitting its upper bound %d\n', i, robot.qlim(i,2))
                 end
             end
