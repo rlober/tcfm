@@ -23,7 +23,7 @@ classdef EETask < Task
         function acc_des = get_desired_acc(obj, t, q, qd)
            acc_ref = zeros(3,1);
            vel_ref = zeros(3,1);
-           pos_ref = [0.25; 0.25; 0.25];
+           pos_ref = [-0.25; 0.25; 0.25];
            
            pos_real = transl(obj.R.fkine(q));
            vel_real = (obj.R.jacob0(q)*qd');

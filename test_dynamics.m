@@ -25,7 +25,7 @@ torque_times = [];
 %% Simulate execution
 % time scale
 step = 0.01;
-tend = 2;
+tend = 4;
 tspan = [0.0 : step : tend];
 
 
