@@ -18,24 +18,28 @@ classdef QpController < handle
         qp_options;
         using_constraints;
         torque_limit;
+        optima;
+        compute_metrics;
+        Es;
+        fs;
+        metric_data;
+        t_old;
+        metric_compute_dt;
     end
     
     methods
-        function obj = QpController(using_constraints, torque_limit)
+        function obj = QpController(tasks, constraints, using_constraints, compute_metrics, torque_limit)
             global robot;
             obj.R = robot;
             obj.torque_limit = torque_limit;
             obj.using_constraints = using_constraints;
+            obj.compute_metrics = compute_metrics;
+            obj.metric_data = {};
             obj.qp_options = optimset('Algorithm','interior-point-convex', 'Display', 'off');
-
-%             obj.tasks = {EEPoseTask(obj.R, 1.0, 10.0, 0.2)};
-%             obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2)};
-%             obj.tasks = {PostureTask(obj.R, 1.0, 10.0, 0.2)};
-            obj.tasks = {EETask(obj.R, 1.0, 10.0, 0.2), PostureTask(obj.R, 0.001, 10.0, 0.2)};
-
-%             obj.constraints = {TorqueConstraint(obj.R, -obj.torque_limit, obj.torque_limit)};
-%             obj.constraints = {JointPositionConstraint(obj.R, obj.R.qlim(:,1), obj.R.qlim(:,2))};
-            obj.constraints = {TorqueConstraint(obj.R, -obj.torque_limit, obj.torque_limit), JointPositionConstraint(obj.R, obj.R.qlim(:,1), obj.R.qlim(:,2))};
+            obj.tasks = tasks;
+            obj.constraints = constraints;
+            obj.t_old = 0.0;
+            obj.metric_compute_dt = 0.1;
         end
         
         function tau = zero_torque(obj, t, q, qd)
@@ -47,6 +51,19 @@ classdef QpController < handle
             
             if obj.using_constraints
                 obj.update_constraints(t, q, qd);
+                if obj.compute_metrics
+                    if (t-obj.t_old) > obj.metric_compute_dt
+                        disp('Computing objective compatibility and feasibility metrics');
+                        n_objectives = size(obj.Es,2);
+                        x_star = obj.solve_unconstrained_qp();
+                        [obj_el, con_el] = computeConstraintAndObjectiveEllipses(obj.optima,obj.G,obj.h,0);
+                        
+                        [ compatibility_metrics, feasibility_metrics ] = computeMetrics( obj.Es, obj.fs, obj.optima, x_star, obj_el, con_el);
+                        
+                        obj.metric_data = [obj.metric_data; {t, compatibility_metrics, feasibility_metrics, obj_el, con_el, n_objectives}];
+                        obj.t_old = t;
+                    end
+                end
                 tau = obj.solve_qp();
             else
                 tau = obj.solve_unconstrained_qp();
@@ -60,8 +77,19 @@ classdef QpController < handle
             
             obj.E = [];
             obj.f = [];
-            for i = 1:size(obj.tasks, 1)
+             obj.Es = {};
+             obj.fs = {};
+             obj.optima = [];
+            for i = 1:size(obj.tasks, 2)
                 obj.tasks{i}.update(t, q, qd);
+                
+                if obj.compute_metrics
+                  
+                   obj.Es = [obj.Es, obj.tasks{i}.E]; 
+                   obj.fs = [obj.fs, obj.tasks{i}.f];
+                   obj.optima = [obj.optima, obj.tasks{i}.tau];
+                end
+                
                 obj.E = [obj.E; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.E];
                 obj.f = [obj.f; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.f];
             end

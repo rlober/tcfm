@@ -8,6 +8,10 @@ classdef EEPoseTask < Task
     methods
         function obj = EEPoseTask(robot, weight, kp, kd)
             obj = obj@Task(robot, weight, kp, kd);
+            obj.acc_ref = zeros(6,1);
+            obj.vel_ref = zeros(6,1);
+            global qn;
+            obj.pos_ref = obj.R.fkine(qn);
         end
         
         function J = get_jacobian(obj, q)
@@ -19,17 +23,23 @@ classdef EEPoseTask < Task
         end
         
         function acc_des = get_desired_acc(obj, t, q, qd)
-           acc_ref = zeros(6,1);
-           vel_ref = zeros(6,1);
-           pos_ref = [1 0 0 0.4; 0 1 0 -0.5; 0 0 1 -0.4; 0 0 0 1];
-           
            pos_real = obj.R.fkine(q);
-           [dP, dR] = PoseError(pos_ref, pos_real);
+           [dP, dR] = PoseError(obj.pos_ref, pos_real);
            
            vel_real = (obj.R.jacob0(q)*qd');
-           vel_err = vel_real - vel_ref;
+           vel_err = obj.vel_ref - vel_real;
            
-           acc_des = acc_ref + obj.kp*[dP; dR] - obj.kd*vel_err;
+           acc_des = obj.acc_ref + obj.kp*[dP; dR] + obj.kd*vel_err;
+        end
+        
+        function n_dof = getTaskDof(obj)
+            n_dof = 4;
+        end
+        
+        function start_pos = getStartPosition(obj, q)
+            pos_real = obj.R.fkine(q);
+            [theta,v] = tr2angvec(pos_real(1:3,1:3));
+            start_pos = pos_real
         end
     end
     

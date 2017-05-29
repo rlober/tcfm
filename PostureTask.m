@@ -8,6 +8,10 @@ classdef PostureTask < Task
     methods
         function obj = PostureTask(robot, weight, kp, kd)
             obj = obj@Task(robot, weight, kp, kd);
+            obj.acc_ref = zeros(obj.R.n,1);
+            obj.vel_ref = zeros(obj.R.n,1);
+            global qn;
+            obj.pos_ref = qn';
         end
         
         function J = get_jacobian(obj, q)
@@ -19,16 +23,20 @@ classdef PostureTask < Task
         end
         
         function acc_des = get_desired_acc(obj, t, q, qd)
-           acc_ref = zeros(obj.R.n,1);
-           vel_ref = zeros(obj.R.n,1);
-           pos_ref = [0,1.57079632679490,-1.57079632679490,0,0,0]';
-           
            pos_real = q';
            vel_real = qd';
            
-           pos_err = pos_ref - pos_real;
-           vel_err = vel_real - vel_ref;
-           acc_des = acc_ref + obj.kp*pos_err - obj.kd*vel_err;
+           pos_err = obj.pos_ref - pos_real;
+           vel_err = obj.vel_ref - vel_real;
+           acc_des = obj.acc_ref + obj.kp*pos_err + obj.kd*vel_err;
+        end
+        
+        function n_dof = getTaskDof(obj)
+            n_dof = obj.R.n;
+        end
+        
+        function start_pos = getStartPosition(obj, q)
+            start_pos = q;
         end
     end
     
