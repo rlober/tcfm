@@ -53,6 +53,9 @@ classdef ElbowPositionTask < Task
             dJdq = obj.get_dJdq(q, qd);
             obj.acc_des = obj.get_desired_acc(t, q, qd);
             
+            obj.references = [obj.references; {t, obj.pos_ref, obj.vel_ref, obj.acc_ref}];
+
+            
             Minv = inv(obj.sub_robot.inertia(q));
             n = obj.sub_robot.coriolis(q, qd) * qd';
             g = obj.sub_robot.gravload(q)';

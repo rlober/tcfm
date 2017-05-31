@@ -60,7 +60,7 @@ classdef QpController < handle
                         
                         [ compatibility_metrics, feasibility_metrics ] = computeMetrics( obj.Es, obj.fs, obj.optima, x_star, obj_el, con_el);
                         
-                        obj.metric_data = [obj.metric_data; {t, compatibility_metrics, feasibility_metrics, obj_el, con_el, n_objectives}];
+                        obj.metric_data = [obj.metric_data; {t, compatibility_metrics, feasibility_metrics, obj_el, con_el, n_objectives, obj.G, obj.h, x_star}];
                         obj.t_old = t;
                     end
                 end
@@ -93,9 +93,11 @@ classdef QpController < handle
                 obj.E = [obj.E; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.E];
                 obj.f = [obj.f; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.f];
             end
-            reg_weight = 0.0001;
-            obj.E = [obj.E; sqrt(reg_weight)*eye(obj.R.n)];
-            obj.f = [obj.f; sqrt(reg_weight)*zeros(obj.R.n,1)];
+            reg_weight = 0.001;
+            Ereg = sqrt(reg_weight)*eye(obj.R.n);
+            Ereg(5,5) = 0.1;
+            obj.E = [obj.E; Ereg];
+            obj.f = [obj.f; zeros(obj.R.n,1)];
              
             obj.Q = (obj.E')*obj.E;
             obj.p = -(obj.E'*obj.f)';

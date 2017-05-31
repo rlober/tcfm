@@ -32,6 +32,7 @@ classdef Task < handle
             obj.kp = kp;
             obj.kd = 2*sqrt(kp);
             obj.using_trajectory = false;
+            obj.references = {};
         end
         
         
@@ -44,7 +45,7 @@ classdef Task < handle
             dJdq = obj.get_dJdq(q, qd);
             obj.acc_des = obj.get_desired_acc(t, q, qd);
             
-            obj.references = obj.references
+            obj.references = [obj.references; {t, obj.pos_ref, obj.vel_ref, obj.acc_ref}];
 %             disp('acc_des = ')
 %             disp(obj.acc_des')
             
@@ -84,7 +85,7 @@ classdef Task < handle
             if obj.first_traj_call
                 obj.start_pos = obj.getStartPosition(q);
                 obj.alpha = obj.pos_des - obj.start_pos;
-                max_vel = 5.0;
+                max_vel = 0.2;
                 obj.pointToPointDuration = norm(obj.alpha) / max_vel;
                 obj.first_traj_call = false;
                 obj.t0 = t;
