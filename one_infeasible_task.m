@@ -1,14 +1,4 @@
-close all;
-clear all; 
-clc;
-%% Load model
-mdl_puma560;
-global robot;
-robot = p560;
-
-global qn;
-qn(1) =  3*pi/4;
-qn(3) = -pi;
+run('load_robot.m');
 
 eePosRef = [-0.25; -0.5; -0.22];
 
