@@ -9,7 +9,6 @@ global qn;
 y0 = [qn'; zeros(robot.n,1)];
 %% Create controller
 using_constraints = use_torque_constraint || use_position_constraint;
-compute_metrics = true;
 
 constraints = {};
 if use_torque_constraint
@@ -23,6 +22,7 @@ if use_position_constraint
 end
 
 
+compute_metrics = true;
 
 global controller;
 controller = QpController(tasks, constraints, using_constraints, compute_metrics, torque_limit);
@@ -72,14 +72,27 @@ task_ref_data = {};
 for i = 1:n_tasks
    task_refs = controller.tasks{i}.references;
    n_dof = size(task_refs{1,2},1);
+   
+   flatten_pose = false;
+   if size(task_refs{1,2},2) == 4
+      flatten_pose = true; 
+      n_dof = 6;
+   end
+   
    n_steps = size(task_refs,1);
    tmp_times = zeros(n_steps,1);
    tmp_pos = zeros(n_steps,n_dof);
    tmp_vel = zeros(n_steps,n_dof);
    tmp_acc = zeros(n_steps,n_dof);
+   
    for j = 1:n_steps
       tmp_times(j,1) = task_refs{j,1};
-      tmp_pos(j,:) = task_refs{j,2}'; 
+      if flatten_pose
+          tmp_pos(j,:) = [tr2rpy(task_refs{j,2}), task_refs{j,2}(1:3,4)']; 
+      else
+          tmp_pos(j,:) = task_refs{j,2}';
+      end
+      
       tmp_vel(j,:) = task_refs{j,3}'; 
       tmp_acc(j,:) = task_refs{j,4}'; 
    end

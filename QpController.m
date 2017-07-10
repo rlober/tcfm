@@ -93,11 +93,13 @@ classdef QpController < handle
                 obj.E = [obj.E; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.E];
                 obj.f = [obj.f; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.f];
             end
-            reg_weight = 0.001;
-            Ereg = sqrt(reg_weight)*eye(obj.R.n);
-            Ereg(5,5) = 0.1;
-            obj.E = [obj.E; Ereg];
-            obj.f = [obj.f; zeros(obj.R.n,1)];
+%             reg_weight = 0.01;
+%             Ereg = sqrt(reg_weight)*inv(obj.R.inertia(q))*eye(obj.R.n);
+%             reg_weight = 0.0000001;
+%             Ereg = sqrt(reg_weight)*eye(obj.R.n);
+%             Ereg(5,5) = 0.1;
+%             obj.E = [obj.E; Ereg];
+%             obj.f = [obj.f; zeros(obj.R.n,1)];
              
             obj.Q = (obj.E')*obj.E;
             obj.p = -(obj.E'*obj.f)';

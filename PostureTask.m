@@ -36,7 +36,7 @@ classdef PostureTask < Task
         end
         
         function start_pos = getStartPosition(obj, q)
-            start_pos = q;
+            start_pos = q';
         end
     end
     

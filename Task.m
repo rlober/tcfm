@@ -23,6 +23,7 @@ classdef Task < handle
         first_traj_call;
         t0;
         references;
+        max_vel;
     end
     
     methods
@@ -33,6 +34,7 @@ classdef Task < handle
             obj.kd = 2*sqrt(kp);
             obj.using_trajectory = false;
             obj.references = {};
+            obj.max_vel = 0.2;
         end
         
         
@@ -85,8 +87,7 @@ classdef Task < handle
             if obj.first_traj_call
                 obj.start_pos = obj.getStartPosition(q);
                 obj.alpha = obj.pos_des - obj.start_pos;
-                max_vel = 0.2;
-                obj.pointToPointDuration = norm(obj.alpha) / max_vel;
+                obj.pointToPointDuration = norm(obj.alpha) / obj.max_vel;
                 obj.first_traj_call = false;
                 obj.t0 = t;
             end

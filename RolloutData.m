@@ -63,6 +63,7 @@ classdef RolloutData
             hold off;
             
             obj.robot.plot(obj.q_traj, 'delay', obj.step);
+            disp('Animation Finished')
         end
         
         
