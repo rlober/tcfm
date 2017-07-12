@@ -1,4 +1,4 @@
-classdef RolloutData
+classdef RolloutData < handle
     %ROLLOUTDATA Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -15,7 +15,25 @@ classdef RolloutData
         n_tasks
         torque_limit
         
+        times
+        c_sum_dist
+        c_sum_cent_dist
+        c_sum_costs
+        f_sum_dist 
+        f_cen_to_cen_dist 
+        GX 
+        H 
+        obj_el_volumes 
+        con_el_volumes 
+        c_costs
+        f_ellipsoid_inequality_measure
+        f_optimum_is_in_ellipsoid
+        f_x_star_in_con_ellipsoid
         
+        q_upper
+        q_lower
+            
+            
         robot_fig
     end
     
@@ -31,27 +49,67 @@ classdef RolloutData
             obj.task_ref_data = obj.data{7};
             obj.step = obj.data{8};
             obj.torque_limit = obj.data{9};
+            obj.q_lower = obj.robot.qlim(:,1);
+            obj.q_upper = obj.robot.qlim(:,2);
 
             obj.n_tasks = size(obj.controller.tasks,2);
-
-            obj.robot_fig = figure();
-            obj.robot_fig.Name = 'Robot Animation';
+            try
+                obj.parse_metric_data();
+            catch
+                disp('could not parse metric data')
+            end
+            
         end
         
         function visualize_task_references(obj)
             sphere_radius = 0.05;
+            eePosRef = [0.7; -0.5; -0.1];
+            elPosRef = [0.2; 0.5; 0.4];
             plot_sphere(eePosRef, sphere_radius, 'blue');
             plot_sphere(elPosRef, sphere_radius, 'red');
         end
         
+        function save_variables(obj, filename)
+            t_traj=obj.t_traj;
+            q_traj=obj.q_traj;
+            tau_traj=obj.tau_traj;
+            tcp_traj=obj.tcp_traj;
+            task_ref_data=obj.task_ref_data;
+            step=obj.step;
+            n_tasks=obj.n_tasks;
+            torque_limit=obj.torque_limit;
+            times=obj.times;
+            c_sum_dist=obj.c_sum_dist;
+            c_sum_cent_dist=obj.c_sum_cent_dist;
+            c_sum_costs=obj.c_sum_costs;
+            f_sum_dist =obj.f_sum_dist;
+            f_cen_to_cen_dist =obj.f_cen_to_cen_dist;
+            GX =obj.GX;
+            H =obj.H;
+            obj_el_volumes =obj.obj_el_volumes;
+            con_el_volumes =obj.con_el_volumes;
+            c_costs=obj.c_costs;
+            f_ellipsoid_inequality_measure=obj.f_ellipsoid_inequality_measure;
+            f_optimum_is_in_ellipsoid=obj.f_optimum_is_in_ellipsoid;
+            f_x_star_in_con_ellipsoid=obj.f_x_star_in_con_ellipsoid;       
+            q_upper = obj.q_upper;
+            q_lower = obj.q_lower;
+            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower');
+        end
         
-        function animate(obj)
+        function animate(obj, movie_name)
             %% Plot results
             
             disp('Displaying Animation')
-            clf(obj.robot_fig);
+            try
+                clf(obj.robot_fig);
+            catch
+                obj.robot_fig = figure();
+                obj.robot_fig.Name = 'Robot Animation';
+            end
             
-%             obj.visualize_task_references();
+            obj.visualize_task_references();
+            
             hold on;
             for i = 1:obj.n_tasks
                 pos= obj.task_ref_data{i,2};
@@ -61,8 +119,11 @@ classdef RolloutData
                 plot3(Xs,Ys,Zs);
             end
             hold off;
-            
-            obj.robot.plot(obj.q_traj, 'delay', obj.step);
+            if exist('movie_name', 'var')
+                obj.robot.plot(obj.q_traj, 'delay', obj.step, 'movie', movie_name);
+            else
+                obj.robot.plot(obj.q_traj, 'delay', obj.step);
+            end
             disp('Animation Finished')
         end
         
@@ -133,156 +194,171 @@ classdef RolloutData
         end
         
 
-%         function parse_metric_data(obj)
-        function plot_metric_data(obj)
-
-        
-            %% Parse metric data
+        function parse_metric_data(obj)
             n_pts = size(obj.controller.metric_data,1);
-            times = zeros(n_pts,1);
-            c_sum_dist = zeros(n_pts,1);
-            c_sum_cent_dist = zeros(n_pts,1);
-            c_sum_costs = zeros(n_pts,1);
-            f_sum_dist = zeros(n_pts,1);
-            f_cen_to_cen_dist = zeros(n_pts,1);
+            obj.times = zeros(n_pts,1);
+            obj.c_sum_dist = zeros(n_pts,1);
+            obj.c_sum_cent_dist = zeros(n_pts,1);
+            obj.c_sum_costs = zeros(n_pts,1);
+            obj.f_sum_dist = zeros(n_pts,1);
+            obj.f_cen_to_cen_dist = zeros(n_pts,1);
             
             n_constraints = size(obj.controller.metric_data{1,7},1);
-            GX = zeros(n_pts, n_constraints);
-            H = zeros(n_pts, n_constraints);
+            obj.GX = zeros(n_pts, n_constraints);
+            obj.H = zeros(n_pts, n_constraints);
             
             
-            obj_el_volumes = zeros(n_pts,1);
-            con_el_volumes = zeros(n_pts,1);
+            obj.obj_el_volumes = zeros(n_pts,1);
+            obj.con_el_volumes = zeros(n_pts,1);
             
             n_max_objectives = 0;
             for i = 1:n_pts
                 n_max_objectives = max([n_max_objectives, obj.controller.metric_data{i,6}]);
             end
             
-            c_costs = zeros(n_pts, n_max_objectives);
+            obj.c_costs = zeros(n_pts, n_max_objectives);
             
-            f_ellipsoid_inequality_measure = zeros(n_pts,n_max_objectives);
-            f_optimum_is_in_ellipsoid = zeros(n_pts,n_max_objectives);
-            f_x_star_in_con_ellipsoid = zeros(n_pts,1);
+            obj.f_ellipsoid_inequality_measure = zeros(n_pts,n_max_objectives);
+            obj.f_optimum_is_in_ellipsoid = zeros(n_pts,n_max_objectives);
+            obj.f_x_star_in_con_ellipsoid = zeros(n_pts,1);
             
             for i = 1:n_pts
-                times(i,1) = obj.controller.metric_data{i,1};
+                obj.times(i,1) = obj.controller.metric_data{i,1};
                 cm = obj.controller.metric_data{i,2};
-                c_sum_dist(i,1) = cm.sum_distance;
-                c_sum_cent_dist(i,1) = cm.sum_center_distance;
-                c_sum_costs(i,1) = cm.sum_of_costs;
+                obj.c_sum_dist(i,1) = cm.sum_distance;
+                obj.c_sum_cent_dist(i,1) = cm.sum_center_distance;
+                obj.c_sum_costs(i,1) = cm.sum_of_costs;
                 n_objectives = obj.controller.metric_data{i,6};
-                c_costs(i,1:n_objectives) = cm.costs_at_x_star;
+                obj.c_costs(i,1:n_objectives) = cm.costs_at_x_star;
                 
                 fm = obj.controller.metric_data{i,3};
-                f_sum_dist(i,1) = fm.sum_center_distance;
-                f_cen_to_cen_dist(i,1) = fm.center_to_center_distance;
-                f_ellipsoid_inequality_measure(i,1:n_objectives) = fm.ellipsoid_inequality_measure;
-                f_optimum_is_in_ellipsoid(i,1:n_objectives) = fm.optimum_is_in_ellipsoid;
-                f_x_star_in_con_ellipsoid(i,1) = fm.x_star_in_con_ellipsoid;
+                obj.f_sum_dist(i,1) = fm.sum_center_distance;
+                obj.f_cen_to_cen_dist(i,1) = fm.center_to_center_distance;
+                obj.f_ellipsoid_inequality_measure(i,1:n_objectives) = fm.ellipsoid_inequality_measure;
+                obj.f_optimum_is_in_ellipsoid(i,1:n_objectives) = fm.optimum_is_in_ellipsoid;
+                obj.f_x_star_in_con_ellipsoid(i,1) = fm.x_star_in_con_ellipsoid;
                 
                 obj_ellipsoid = obj.controller.metric_data{i,4};
-                obj_el_volumes(i,1) = obj_ellipsoid.volume;
+                obj.obj_el_volumes(i,1) = obj_ellipsoid.volume;
                 
                 con_ellipsoid = obj.controller.metric_data{i,5};
-                con_el_volumes(i,1) = con_ellipsoid.volume;
+                obj.con_el_volumes(i,1) = con_ellipsoid.volume;
                 
                 
-                GX(i,:) = (obj.controller.metric_data{i,7}*obj.controller.metric_data{i,9})';
-                H(i,:) = obj.controller.metric_data{i,8}';
+                obj.GX(i,:) = (obj.controller.metric_data{i,7}*obj.controller.metric_data{i,9})';
+                obj.H(i,:) = obj.controller.metric_data{i,8}';
             end
-%         end
+        end
         
-%         function plot_metric_data(obj)
+        function plot_compatibility_distance_metric(obj)
             %% Plot metric data
             fig4 = figure();
             fig4.Name = 'Objective Compatibility Metrics';
             subplot(2,1,1)
-            plot(times,c_sum_dist)
+            plot(obj.times,obj.c_sum_dist)
             ylabel('c sum dist')
             xlabel('t (sec)')
             subplot(2,1,2)
-            plot(times,c_sum_cent_dist)
+            plot(obj.times,obj.c_sum_cent_dist)
             ylabel('c sum cent dist')
             xlabel('t (sec)')
-            
-            
+        end
+        
+        function plot_compatibility_cost_metric(obj)
             fig4 = figure();
             fig4.Name = 'Objective Cost Metrics';
             
             for i = 1:n_max_objectives
                 subplot(n_max_objectives+1,1,i)
-                plot(times,c_costs(:,i))
+                plot(obj.times,obj.c_costs(:,i))
                 ylabel(sprintf('cost f_%i',i))
                 xlabel('t (sec)')
             end
             subplot(n_max_objectives+1,1,n_max_objectives+1)
-            plot(times,c_sum_costs)
+            plot(obj.times,obj.c_sum_costs)
             ylabel('c sum costs')
             xlabel('t (sec)')
-            
+        end
+        
+        function plot_feasibility_distance_metric(obj)
+
             fig5 = figure();
             fig5.Name = 'Objective Feasibility Metrics';
             subplot(2,1,1)
-            plot(times,f_sum_dist)
+            plot(obj.times,obj.f_sum_dist)
             ylabel('f sum dist')
             xlabel('t (sec)')
             
             subplot(2,1,2)
-            plot(times,f_cen_to_cen_dist)
+            plot(obj.times,obj.f_cen_to_cen_dist)
             ylabel('f cen to cen dist')
             xlabel('t (sec)')
-            
+        end
+        
+        function plot_ellipsoid_volumes(obj)
+
             fig6 = figure();
             fig6.Name = 'Ellipsoid Volumes';
             subplot(2,1,1)
-            plot(times,obj_el_volumes)
+            plot(obj.times,obj.obj_el_volumes)
             ylabel('obj el volumes')
             xlabel('t (sec)')
             
             subplot(2,1,2)
-            plot(times,con_el_volumes)
+            plot(obj.times,obj.con_el_volumes)
             ylabel('con el volumes')
             xlabel('t (sec)')
-            
+        end
+        
+        function plot_constraint_ellipsoid_evaluation_at_x_star(obj)
+
             fig7 = figure();
             fig7.Name = 'Ellipsoid Equation Evaluation';
             for i = 1:n_max_objectives
                 subplot(n_max_objectives+1,1,i)
-                plot(times,f_ellipsoid_inequality_measure(:,i))
+                plot(obj.times,obj.f_ellipsoid_inequality_measure(:,i))
                 ylabel(sprintf('ellipsoid inequality measure f_%i',i))
                 xlabel('t (sec)')
             end
             subplot(n_max_objectives+1,1,n_max_objectives+1)
-            plot(times,f_x_star_in_con_ellipsoid)
+            plot(obj.times,obj.f_x_star_in_con_ellipsoid)
             ylabel('f x^* in con ellipsoid')
             xlabel('t (sec)')
             
-            
+        end
+        
+        function plot_constraint_evaluation_at_x_star(obj)
+
             n_con_types = size(obj.controller.constraints,2);
             n_con_eqns = obj.robot.n * 2;
-            k = 1;
-            for j = 1:n_con_types
-                
-                fig8 = figure();
-                fig8.Name = 'Constraint Evaluation at x^*';
+            current_constraint_index = 1;
+            fig8 = figure();
+            fig8.Name = 'Constraint Evaluation at x^*';
                 m = 1;
-                for i = k:n_con_eqns*j
-                    subplot(2, (n_con_eqns/2), m)
-                    plot(times, H(:,i), 'Color', [0.6, 0.6, 0], 'LineWidth', 3);
+                for i = 1:n_con_eqns*n_con_types
+                    
+                    subplot(n_con_types, (n_con_eqns), m)
+                    plot(obj.times, obj.H(:,i), 'Color', [0.6, 0.6, 0], 'LineWidth', 3);
                     hold on;
-                    plot(times, GX(:,i), 'Color', [0.0, 0.6, 0], 'LineWidth', 3);
-                    for f = 1:size(H,1)
-                        if ( GX(f,i) > H(f,i) )
-                            plot(times(f,1), GX(f,i), 'LineStyle', 'none', 'Marker', 'o', 'MarkerFaceColor', [0.6, 0, 0], 'MarkerSize', 4)
+                    plot(obj.times, obj.GX(:,i), 'Color', [0.0, 0.6, 0], 'LineWidth', 3);
+                    for f = 1:size(obj.H,1)
+                        if ( obj.GX(f,i) > obj.H(f,i) )
+                            plot(obj.times(f,1), obj.GX(f,i), 'LineStyle', 'none', 'Marker', 'o', 'MarkerFaceColor', [0.6, 0, 0], 'MarkerSize', 4)
                         end
+                    end
+                    
+                    if (i == 1 || mod(i,n_con_eqns+1)==0) && current_constraint_index <= n_con_types
+                        ylabel(class(obj.controller.constraints{current_constraint_index}));
+                        current_constraint_index = current_constraint_index + 1;
                     end
                     
                     hold off;
                     m = m+1;
                 end
-                k = k+n_con_eqns;
-            end
+            leg1 = legend('$h$', '$Gx^*$', '$Gx^* > h$');
+            set(leg1,'Interpreter','latex');
+            set(leg1,'FontSize',17);
+            set(leg1,'Location','northwestoutside');
         end
     end
 end
