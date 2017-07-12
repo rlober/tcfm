@@ -1,4 +1,4 @@
-function rollout_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit)
+function rollout_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics)
 
 global robot;
 
@@ -22,7 +22,6 @@ if use_position_constraint
 end
 
 
-compute_metrics = true;
 
 global controller;
 controller = QpController(tasks, constraints, using_constraints, compute_metrics, torque_limit);

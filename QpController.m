@@ -57,8 +57,11 @@ classdef QpController < handle
                         n_objectives = size(obj.Es,2);
                         x_star = obj.solve_unconstrained_qp();
                         [obj_el, con_el] = computeConstraintAndObjectiveEllipses(obj.optima,obj.G,obj.h,0);
-                        
-                        [ compatibility_metrics, feasibility_metrics ] = computeMetrics( obj.Es, obj.fs, obj.optima, x_star, obj_el, con_el);
+                        task_weights = [];
+                        for i = 1:size(obj.tasks,2)
+                           task_weights = [task_weights, obj.tasks{i}.weight];
+                        end
+                        [ compatibility_metrics, feasibility_metrics ] = computeMetrics(task_weights, obj.Es, obj.fs, obj.optima, x_star, obj_el, con_el);
                         
                         obj.metric_data = [obj.metric_data; {t, compatibility_metrics, feasibility_metrics, obj_el, con_el, n_objectives, obj.G, obj.h, x_star}];
                         obj.t_old = t;

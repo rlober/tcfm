@@ -63,8 +63,10 @@ classdef RolloutData < handle
         
         function visualize_task_references(obj)
             sphere_radius = 0.05;
-            eePosRef = [0.7; -0.5; -0.1];
-            elPosRef = [0.2; 0.5; 0.4];
+%             eePosRef = [0.7; -0.5; -0.1];
+%             elPosRef = [0.2; 0.5; 0.4];
+            eePosRef = [-0.5675;   -0.2367;   -0.0144];
+            elPosRef = [-0.3229;   -0.0539;    0.2910];
             plot_sphere(eePosRef, sphere_radius, 'blue');
             plot_sphere(elPosRef, sphere_radius, 'red');
         end
@@ -152,7 +154,11 @@ classdef RolloutData < handle
             for i = 1:obj.robot.n
                 subplot(2,3,i)
                 plot(obj.t_traj, obj.tau_traj(:,i), 'b')
-                ylim([-obj.torque_limit; obj.torque_limit])
+                if size(obj.torque_limit,2) > 1
+                    ylim([-obj.torque_limit(1,i); obj.torque_limit(1,i)])
+                else
+                    ylim([-obj.torque_limit; obj.torque_limit])
+                end
                 ylabel('tau (Nm)')
                 xlabel('t (sec)')
                 title(sprintf('Joint %i',i))

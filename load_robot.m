@@ -1,6 +1,6 @@
-close all;
-clear all; 
-clc;
+% close all;
+% clear all; 
+% clc;
 
 %% Load model
 mdl_puma560;
