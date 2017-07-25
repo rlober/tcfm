@@ -13,19 +13,19 @@ classdef JointPositionConstraint < Constraint
         end
         
         function update(obj, t, q, qd)
-%             dt = t - obj.t_old;
-%             if dt < 0.001 
-%                 dt = 0.001;
-%             end
+            
             dt = 0.2;
+%             dt = 0.001;
             Minv = inv(obj.R.inertia(q));
             n = obj.R.coriolis(q, qd) * qd';
             g = obj.R.gravload(q)';
             Minvgn = Minv*(n - g);
             pred = (q' + dt*qd');
+            disp(pred)
             
             obj.G = [Minv; -1*Minv];
             obj.h = [(2 / (dt^2))*(obj.ub - pred) + Minvgn; -1*((2 / (dt^2))*(obj.lb - pred) + Minvgn)];
+            
             obj.t_old = t;
         end
         

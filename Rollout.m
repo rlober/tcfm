@@ -31,7 +31,7 @@ global torque_times;
 torque_times = [];
 %% Simulate execution
 % time scale
-step = 0.01;
+step = 0.001;
 tend = 8;
 tspan = [0.0 : step : tend];
 
@@ -44,7 +44,10 @@ disp('simulating')
 global stop_integration;
 stop_integration = false;
 opts=odeset('Events',@odeStop);
-[t, y] = ode45(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+% [t, y] = ode45(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+% [t, y] = runge_kutta_4(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+[t, y] = euler_1(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+
 size(t)
 % [t, y] = simpleDynamicsIntegration( use_friction, tspan, y0 );
 q_traj = y(:,1:robot.n);

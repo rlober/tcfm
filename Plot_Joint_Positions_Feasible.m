@@ -16,12 +16,12 @@ switch example
         elPosRef = [-0.3229;   -0.0539;    0.2910];
 end
 
-rollout_data.animate();
+% rollout_data.animate();
 
 
 
 
-% rollout_data.animate(example);
+rollout_data.animate(example);
 
 %%
 % rollout_data.plot_joint_positions();
