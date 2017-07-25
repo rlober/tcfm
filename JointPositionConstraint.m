@@ -21,7 +21,7 @@ classdef JointPositionConstraint < Constraint
             g = obj.R.gravload(q)';
             Minvgn = Minv*(n - g);
             pred = (q' + dt*qd');
-            disp(pred)
+%             disp(pred)
             
             obj.G = [Minv; -1*Minv];
             obj.h = [(2 / (dt^2))*(obj.ub - pred) + Minvgn; -1*((2 / (dt^2))*(obj.lb - pred) + Minvgn)];
