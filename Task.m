@@ -68,8 +68,9 @@ classdef Task < handle
                 obj.E = [obj.J, zeros(size(obj.J,1),6)];
                 obj.f = obj.acc_des - dJdq;
                 A = [-M, eye(6)];
-                b = n - g;
+                b = n + g;
                 obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
+%                 disp(obj.tau')
             end
             
         end

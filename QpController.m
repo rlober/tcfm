@@ -25,6 +25,10 @@ classdef QpController < handle
         metric_data;
         t_old;
         metric_compute_dt;
+        
+        M;
+        n;
+        g;
     end
     
     methods
@@ -47,6 +51,7 @@ classdef QpController < handle
         end
         
         function tau = compute_tau(obj, t, q, qd)
+            global use_reduced;
             obj.update(t, q, qd)
             
             if obj.using_constraints
@@ -67,9 +72,16 @@ classdef QpController < handle
                         obj.t_old = t;
                     end
                 end
-                tau = obj.solve_qp(q, qd);
+                
+                tau = obj.solve_qp();
+                if ~use_reduced
+                    tau = tau(7:end,:);
+                end
             else
                 tau = obj.solve_unconstrained_qp();
+                if ~use_reduced
+                    tau = tau(7:end,:);
+                end
             end
         end
         
@@ -77,6 +89,10 @@ classdef QpController < handle
             obj.q = q;
             obj.qd = qd;
             obj.t = t;
+            
+            obj.M = obj.R.inertia(q);
+            obj.n = obj.R.coriolis(q, qd) * qd';
+            obj.g = obj.R.gravload(q)';
             
             obj.E = [];
             obj.f = [];
@@ -122,21 +138,29 @@ classdef QpController < handle
         end
         
         function tau = solve_unconstrained_qp(obj)
-           tau = pinv(obj.E)*obj.f;
+           global use_reduced;
+           if use_reduced
+                tau = pinv(obj.E)*obj.f;
+           else
+               A = [-obj.M, eye(6)];
+               b = obj.n + obj.g;
+               tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], optimset('Algorithm','interior-point', 'Display', 'off'));
+           end
         end
         
-        function tau = solve_qp(obj, q, qd)
+        function tau = solve_qp(obj)
             global use_reduced;
             if use_reduced
-                [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
+                [tau,~,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
             else
-                M = obj.R.inertia(q);
-                n = obj.R.coriolis(q, qd) * qd';
-                g = obj.R.gravload(q)';
-                A = [-M, eye(6)];
-                b = n - g;
-                [qdd_tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, A, b,[],[],[], obj.qp_options);
-                tau = qdd_tau(7:end,:);
+                
+                A = [-obj.M, eye(6)];
+                b = obj.n + obj.g;
+                [tau,~,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, A, b,[],[],[], obj.qp_options);
+
+                
+%                 disp('controller')
+%                 disp(tau')
             end
 %            [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
 %            [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,[],[], [],[],[],[],[], obj.qp_options);
