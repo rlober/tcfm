@@ -24,6 +24,7 @@ classdef Task < handle
         t0;
         references;
         max_vel;
+        qp_options;
     end
     
     methods
@@ -35,6 +36,7 @@ classdef Task < handle
             obj.using_trajectory = false;
             obj.references = {};
             obj.max_vel = 0.2;
+            obj.qp_options = optimset('Algorithm','interior-point', 'Display', 'off');
         end
         
         
@@ -50,15 +52,26 @@ classdef Task < handle
             obj.references = [obj.references; {t, obj.pos_ref, obj.vel_ref, obj.acc_ref}];
 %             disp('acc_des = ')
 %             disp(obj.acc_des')
-            
-            Minv = inv(obj.R.inertia(q));
+
+            M = obj.R.inertia(q);
             n = obj.R.coriolis(q, qd) * qd';
             g = obj.R.gravload(q)';
-
-            obj.E = obj.J*Minv;
-            obj.f = obj.acc_des - dJdq - obj.J*Minv*(n-g);
-
-            obj.tau = pinv(obj.E)*obj.f; 
+                
+            global use_reduced;
+            if use_reduced
+                Minv = inv(M);
+                obj.E = obj.J*Minv;
+                obj.f = obj.acc_des - dJdq - obj.J*Minv*(n-g);
+                
+                obj.tau = pinv(obj.E)*obj.f;
+            else
+                obj.E = [obj.J, zeros(size(obj.J,1),6)];
+                obj.f = obj.acc_des - dJdq;
+                A = [-M, eye(6)];
+                b = n - g;
+                obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
+            end
+            
         end
         
         function setReferences(obj, pos, vel, acc)

@@ -2,6 +2,8 @@ close all
 clear all
 clc
 compute_metrics = false;
+global use_reduced;
+use_reduced = false;
 
 test_examples = {};
 % test_examples = [test_examples, 'joint_positions_feasible'];
@@ -11,7 +13,7 @@ test_examples = {};
 test_examples = [test_examples, 'temporally_incompatible_tasks'];
 
 for i = 1:size(test_examples,2)
-    clearvars -except test_examples i compute_metrics
+    clearvars -except test_examples i compute_metrics use_reduced
     clc;
     example = test_examples{i};
     run('load_robot.m');

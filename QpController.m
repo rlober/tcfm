@@ -67,7 +67,7 @@ classdef QpController < handle
                         obj.t_old = t;
                     end
                 end
-                tau = obj.solve_qp();
+                tau = obj.solve_qp(q, qd);
             else
                 tau = obj.solve_unconstrained_qp();
             end
@@ -92,7 +92,7 @@ classdef QpController < handle
                    obj.fs = [obj.fs, obj.tasks{i}.f];
                    obj.optima = [obj.optima, obj.tasks{i}.tau];
                 end
-                
+%                 disp(size(obj.tasks{i}.E))
                 obj.E = [obj.E; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.E];
                 obj.f = [obj.f; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.f];
             end
@@ -113,6 +113,9 @@ classdef QpController < handle
             obj.h = [];
             for i = 1:size(obj.constraints,2)
                obj.constraints{i}.update(t, q, qd);
+%                disp(size(obj.constraints{i}.G))
+%                disp(size(obj.constraints{i}.h))
+
                obj.G = [obj.G; obj.constraints{i}.G];
                obj.h = [obj.h; obj.constraints{i}.h];
             end
@@ -122,9 +125,20 @@ classdef QpController < handle
            tau = pinv(obj.E)*obj.f;
         end
         
-        function tau = solve_qp(obj)
-
-           [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
+        function tau = solve_qp(obj, q, qd)
+            global use_reduced;
+            if use_reduced
+                [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
+            else
+                M = obj.R.inertia(q);
+                n = obj.R.coriolis(q, qd) * qd';
+                g = obj.R.gravload(q)';
+                A = [-M, eye(6)];
+                b = n - g;
+                [qdd_tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, A, b,[],[],[], obj.qp_options);
+                tau = qdd_tau(7:end,:);
+            end
+%            [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
 %            [tau,j_val,EXITFLAG] = quadprog(obj.Q,obj.p,[],[], [],[],[],[],[], obj.qp_options);
              if EXITFLAG == 0
                 disp('Maximum number of iterations exceeded.')

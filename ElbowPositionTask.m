@@ -46,6 +46,13 @@ classdef ElbowPositionTask < Task
                 obj.minJerkTrajectory(t, q);
             end
             
+            global use_reduced;
+            if ~use_reduced
+                M_big = obj.R.inertia(q);
+                n_big = obj.R.coriolis(q, qd) * qd';
+                g_big = obj.R.gravload(q)';
+            end
+            
             q = q(1:obj.n_links);
             qd = qd(1:obj.n_links);
             
@@ -56,14 +63,21 @@ classdef ElbowPositionTask < Task
             obj.references = [obj.references; {t, obj.pos_ref, obj.vel_ref, obj.acc_ref}];
 
             
-            Minv = inv(obj.sub_robot.inertia(q));
-            n = obj.sub_robot.coriolis(q, qd) * qd';
-            g = obj.sub_robot.gravload(q)';
-            
-            obj.E = [obj.J*Minv, zeros(3,(obj.R.n - obj.sub_robot.n))];
-            obj.f = obj.acc_des - dJdq - obj.J*Minv*(n-g);
-            
-            obj.tau = pinv(obj.E)*obj.f;
+            if use_reduced
+                Minv = inv(obj.sub_robot.inertia(q));
+                n = obj.sub_robot.coriolis(q, qd) * qd';
+                g = obj.sub_robot.gravload(q)';
+                obj.E = [obj.J*Minv, zeros(3,(obj.R.n - obj.sub_robot.n))];
+                obj.f = obj.acc_des - dJdq - obj.J*Minv*(n-g);
+                obj.tau = pinv(obj.E)*obj.f;
+            else
+                obj.E = [obj.J, zeros(3,(obj.R.n - obj.sub_robot.n)), zeros(3,6)];
+                obj.f = obj.acc_des - dJdq;
+               
+                A = [-M_big, eye(6)];
+                b = n_big - g_big;
+                obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
+            end
         end
         
         function n_dof = getTaskDof(obj)

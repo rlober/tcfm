@@ -23,10 +23,19 @@ classdef JointPositionConstraint < Constraint
             pred = (q' + dt*qd');
 %             disp(pred)
             
-            obj.G = [Minv; -1*Minv];
-            obj.h = [(2 / (dt^2))*(obj.ub - pred) + Minvgn; -1*((2 / (dt^2))*(obj.lb - pred) + Minvgn)];
+            
+            
+            global use_reduced;
+            if use_reduced
+                obj.G = [Minv; -1*Minv];
+                obj.h = [(2 / (dt^2))*(obj.ub - pred) + Minvgn; -1*((2 / (dt^2))*(obj.lb - pred) + Minvgn)];
+            else
+                obj.G = [eye(6), zeros(6,6); -1*eye(6), zeros(6,6)];
+                obj.h = (2 / (dt^2))*[(obj.ub - pred); -1*(obj.lb - pred)];            
+            end
             
             obj.t_old = t;
+            
         end
         
     end
