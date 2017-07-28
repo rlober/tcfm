@@ -19,7 +19,7 @@ classdef PostureTask < Task
         end
         
         function dJdq = get_dJdq(obj, q, qd)
-           dJdq = qd';
+           dJdq = zeros(size(qd,2),1);%qd';
         end
         
         function acc_des = get_desired_acc(obj, t, q, qd)
