@@ -69,7 +69,8 @@ classdef Task < handle
                 obj.f = obj.acc_des - dJdq;
                 A = [-M, eye(6)];
                 b = n + g;
-                obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
+%                 obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
+                obj.tau = CLS(obj.E, obj.f, A, b);
 %                 disp(obj.tau')
             end
             

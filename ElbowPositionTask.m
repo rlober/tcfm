@@ -76,8 +76,8 @@ classdef ElbowPositionTask < Task
                
                 A = [-M_big, eye(6)];
                 b = n_big + g_big;
-                obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
-               
+%                 obj.tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], obj.qp_options);
+                obj.tau = CLS(obj.E, obj.f, A, b);
             end
         end
         

@@ -27,6 +27,7 @@ classdef RolloutData < handle
         con_el_volumes 
         c_costs
         f_ellipsoid_inequality_measure
+        f_big_ellipsoid_inequality_measure
         f_optimum_is_in_ellipsoid
         f_x_star_in_con_ellipsoid
         
@@ -96,7 +97,8 @@ classdef RolloutData < handle
             f_x_star_in_con_ellipsoid=obj.f_x_star_in_con_ellipsoid;       
             q_upper = obj.q_upper;
             q_lower = obj.q_lower;
-            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower');
+            f_big_ellipsoid_inequality_measure=obj.f_big_ellipsoid_inequality_measure;
+           save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure');
         end
         
         function animate(obj, movie_name)
@@ -225,6 +227,7 @@ classdef RolloutData < handle
             obj.c_costs = zeros(n_pts, n_max_objectives);
             
             obj.f_ellipsoid_inequality_measure = zeros(n_pts,n_max_objectives);
+            obj.f_big_ellipsoid_inequality_measure = zeros(n_pts,n_max_objectives);
             obj.f_optimum_is_in_ellipsoid = zeros(n_pts,n_max_objectives);
             obj.f_x_star_in_con_ellipsoid = zeros(n_pts,1);
             
@@ -241,6 +244,7 @@ classdef RolloutData < handle
                 obj.f_sum_dist(i,1) = fm.sum_center_distance;
                 obj.f_cen_to_cen_dist(i,1) = fm.center_to_center_distance;
                 obj.f_ellipsoid_inequality_measure(i,1:n_objectives) = fm.ellipsoid_inequality_measure;
+                obj.f_big_ellipsoid_inequality_measure(i,1:n_objectives) = fm.big_ellipsoid_inequality_measure;
                 obj.f_optimum_is_in_ellipsoid(i,1:n_objectives) = fm.optimum_is_in_ellipsoid;
                 obj.f_x_star_in_con_ellipsoid(i,1) = fm.x_star_in_con_ellipsoid;
                 
