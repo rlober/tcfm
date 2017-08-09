@@ -57,7 +57,7 @@ classdef QpController < handle
             if obj.using_constraints
                 obj.update_constraints(t, q, qd);
                 if obj.compute_metrics
-                    if (t-obj.t_old) > obj.metric_compute_dt
+                    if ((t-obj.t_old) >= obj.metric_compute_dt) || (t == 0.0)
                         disp('Computing objective compatibility and feasibility metrics');
                         n_objectives = size(obj.Es,2);
                         x_star = obj.solve_unconstrained_qp();
@@ -66,7 +66,9 @@ classdef QpController < handle
                         for i = 1:size(obj.tasks,2)
                            task_weights = [task_weights, obj.tasks{i}.weight];
                         end
-                        [ compatibility_metrics, feasibility_metrics ] = computeMetrics(task_weights, obj.Es, obj.fs, obj.optima, x_star, obj_el, con_el);
+                        A = [-obj.M, eye(6)];
+                        b = obj.n + obj.g;
+                        [ compatibility_metrics, feasibility_metrics ] = computeMetrics(task_weights, obj.Es, obj.fs, obj.optima, x_star, obj_el, con_el, obj.E, obj.f, A, b);
                         
                         obj.metric_data = [obj.metric_data; {t, compatibility_metrics, feasibility_metrics, obj_el, con_el, n_objectives, obj.G, obj.h, x_star}];
                         obj.t_old = t;
@@ -112,16 +114,7 @@ classdef QpController < handle
                 obj.E = [obj.E; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.E];
                 obj.f = [obj.f; sqrt(obj.tasks{i}.weight)*obj.tasks{i}.f];
             end
-%             reg_weight = 0.01;
-%             Ereg = sqrt(reg_weight)*inv(obj.R.inertia(q))*eye(obj.R.n);
-%             reg_weight = 0.0000001;
-%             Ereg = sqrt(reg_weight)*eye(obj.R.n);
-%             Ereg(5,5) = 0.1;
-%             obj.E = [obj.E; Ereg];
-%             obj.f = [obj.f; zeros(obj.R.n,1)];
-             
-            obj.Q = (obj.E')*obj.E;
-            obj.p = -(obj.E'*obj.f)';
+
         end
         
         function update_constraints(obj, t, q, qd)
@@ -144,12 +137,25 @@ classdef QpController < handle
            else
                A = [-obj.M, eye(6)];
                b = obj.n + obj.g;
-               tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], optimset('Algorithm','interior-point', 'Display', 'off'));
+%                tau = lsqlin(obj.E, obj.f, A, b, [], [], [], [], [], optimset('Algorithm','interior-point', 'Display', 'off'));
+               tau = CLS(obj.E, obj.f, A, b);
            end
         end
         
         function tau = solve_qp(obj)
             global use_reduced;
+            
+            %             reg_weight = 0.01;
+%             Ereg = sqrt(reg_weight)*inv(obj.R.inertia(q))*eye(obj.R.n);
+            reg_weight = 0.00001;
+            Ereg = sqrt(reg_weight)*eye(obj.R.n*2);
+%             Ereg(5,5) = 0.1;
+            obj.E = [obj.E; Ereg];
+            obj.f = [obj.f; zeros(obj.R.n*2,1)];
+             
+            obj.Q = (obj.E')*obj.E;
+            obj.p = -(obj.E'*obj.f)';
+            
             if use_reduced
                 [tau,~,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, [],[],[],[],[], obj.qp_options);
             else

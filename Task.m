@@ -23,6 +23,8 @@ classdef Task < handle
         first_traj_call;
         t0;
         references;
+        desired_accelerations;
+        desired_acceleration_norms;
         max_vel;
         qp_options;
     end
@@ -35,6 +37,8 @@ classdef Task < handle
             obj.kd = 2*sqrt(kp);
             obj.using_trajectory = false;
             obj.references = {};
+            obj.desired_accelerations = {};
+            obj.desired_acceleration_norms = {};
             obj.max_vel = 0.2;
             obj.qp_options = optimset('Algorithm','interior-point', 'Display', 'off');
         end
@@ -49,6 +53,9 @@ classdef Task < handle
             dJdq = obj.get_dJdq(q, qd);
             obj.acc_des = obj.get_desired_acc(t, q, qd);
             
+            obj.desired_accelerations = [obj.desired_accelerations; {t, obj.acc_des}];
+            obj.desired_acceleration_norms = [obj.desired_acceleration_norms; {t, norm(obj.acc_des)}];
+
             obj.references = [obj.references; {t, obj.pos_ref, obj.vel_ref, obj.acc_ref}];
 %             disp('acc_des = ')
 %             disp(obj.acc_des')

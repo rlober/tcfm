@@ -22,6 +22,11 @@ for i = 1:size(test_examples,2)
     eePositionTask = EETask(robot, 1.0, 10.0, 0.2);
     elbowPositionTask = ElbowPositionTask(robot, 1.0, 10.0, 0.2);
     tasks = {};
+    
+    solver = 'euler';
+    dt = 0.01;
+    tend = 4;
+    
     switch example
         case 'joint_positions_feasible'
             qn = qr;
@@ -79,7 +84,7 @@ for i = 1:size(test_examples,2)
     use_torque_constraint = true;
     use_position_constraint = true;
     
-    raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics);
+    raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver);
     
     %%
     rollout_data = RolloutData(raw_data);

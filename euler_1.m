@@ -9,7 +9,7 @@ y(1,:) = y0';                                          % initial condition
 
 for i=1:(length(t)-1)                              % calculation loop
     dydt = fn_handle( t(i,1), y(i,:)' );
-    y(i+1,:) = ( y(i,:)' + dydt )';  
+    y(i+1,:) = ( y(i,:)' + dydt * h )';  
     
     if stop_integration
         break;

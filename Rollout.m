@@ -1,4 +1,4 @@
-function rollout_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics)
+function rollout_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver)
 
 global robot;
 
@@ -17,7 +17,11 @@ if use_torque_constraint
 end
 
 if use_position_constraint
-    positionConstraint = JointPositionConstraint(robot, robot.qlim(:,1), robot.qlim(:,2));
+    pos_constraint_dt = dt;
+    if strcmp(solver, 'ode')
+        pos_constraint_dt = 0.2;
+    end
+    positionConstraint = JointPositionConstraint(robot, robot.qlim(:,1), robot.qlim(:,2), pos_constraint_dt);
     constraints = [constraints, {positionConstraint}];
 end
 
@@ -31,9 +35,8 @@ global torque_times;
 torque_times = [];
 %% Simulate execution
 % time scale
-step = 0.01;
-tend = 8;
-tspan = [0.0 : step : tend];
+step=dt;
+tspan = 0.0 : dt : tend;
 
 
 % friction
@@ -44,9 +47,15 @@ disp('simulating')
 global stop_integration;
 stop_integration = false;
 opts=odeset('Events',@odeStop);
-[t, y] = ode45(@(t,y) dynamics(t,y, use_friction), tspan, y0);
-% [t, y] = runge_kutta_4(@(t,y) dynamics(t,y, use_friction), tspan, y0);
-% [t, y] = euler_1(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+
+switch solver
+    case 'ode'
+        [t, y] = ode45(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+    case 'rk'
+        [t, y] = runge_kutta_4(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+    case 'euler'
+        [t, y] = euler_1(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+end
 
 size(t)
 % [t, y] = simpleDynamicsIntegration( use_friction, tspan, y0 );
@@ -71,6 +80,12 @@ end_posture = q_traj(end,:);
 
 n_tasks = size(controller.tasks,2);
 task_ref_data = {};
+n_times = size(controller.tasks{1}.desired_acceleration_norms,1);
+task_acc_des_norms = zeros(n_times, n_tasks+1);
+for i = 1:n_times
+    task_acc_des_norms(i,1)=controller.tasks{1}.desired_acceleration_norms{i,1};
+end
+
 for i = 1:n_tasks
    task_refs = controller.tasks{i}.references;
    n_dof = size(task_refs{1,2},1);
@@ -99,9 +114,13 @@ for i = 1:n_tasks
       tmp_acc(j,:) = task_refs{j,4}'; 
    end
    task_ref_data = [task_ref_data; {tmp_times, tmp_pos, tmp_vel, tmp_acc}];
+   
+   for j = 1:n_times
+       task_acc_des_norms(j,1+i)=controller.tasks{i}.desired_acceleration_norms{j,2};
+   end
 end
 
-rollout_data = {robot, controller, t_traj, q_traj, tau_traj, tcp_traj, task_ref_data, step, torque_limit};
+rollout_data = {robot, controller, t_traj, q_traj, tau_traj, tcp_traj, task_ref_data, step, torque_limit, task_acc_des_norms};
 end
 
 

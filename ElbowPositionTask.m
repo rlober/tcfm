@@ -60,6 +60,9 @@ classdef ElbowPositionTask < Task
             dJdq = obj.get_dJdq(q, qd);
             obj.acc_des = obj.get_desired_acc(t, q, qd);
             
+            obj.desired_accelerations = [obj.desired_accelerations; {t, obj.acc_des}];
+            obj.desired_acceleration_norms = [obj.desired_acceleration_norms; {t, norm(obj.acc_des)}];
+            
             obj.references = [obj.references; {t, obj.pos_ref, obj.vel_ref, obj.acc_ref}];
 
             

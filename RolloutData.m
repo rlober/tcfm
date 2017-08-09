@@ -31,9 +31,20 @@ classdef RolloutData < handle
         f_optimum_is_in_ellipsoid
         f_x_star_in_con_ellipsoid
         
+        rank_A
+        rank_Ab
+        n
+        strictly_compatible
+        nuclear_norm_A
+        nuclear_norm_Ab
+        nuclear_norm_ratio
+        nuclear_norm_ratio_augmented
         q_upper
         q_lower
-            
+        
+        n_max_objectives
+        
+        task_acc_des_norms
             
         robot_fig
     end
@@ -50,6 +61,7 @@ classdef RolloutData < handle
             obj.task_ref_data = obj.data{7};
             obj.step = obj.data{8};
             obj.torque_limit = obj.data{9};
+            obj.task_acc_des_norms = obj.data{10};
             obj.q_lower = obj.robot.qlim(:,1);
             obj.q_upper = obj.robot.qlim(:,2);
 
@@ -98,7 +110,16 @@ classdef RolloutData < handle
             q_upper = obj.q_upper;
             q_lower = obj.q_lower;
             f_big_ellipsoid_inequality_measure=obj.f_big_ellipsoid_inequality_measure;
-           save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure');
+            rank_A = obj.rank_A;
+            rank_Ab = obj.rank_Ab;
+            n = obj.n;
+            strictly_compatible = obj.strictly_compatible;
+            nuclear_norm_A = obj.nuclear_norm_A;
+            nuclear_norm_Ab = obj.nuclear_norm_Ab;
+            nuclear_norm_ratio = obj.nuclear_norm_ratio;
+            nuclear_norm_ratio_augmented = obj.nuclear_norm_ratio_augmented;
+            task_acc_des_norms = obj.task_acc_des_norms;
+            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms');
         end
         
         function animate(obj, movie_name)
@@ -219,17 +240,26 @@ classdef RolloutData < handle
             obj.obj_el_volumes = zeros(n_pts,1);
             obj.con_el_volumes = zeros(n_pts,1);
             
-            n_max_objectives = 0;
+            obj.n_max_objectives = 0;
             for i = 1:n_pts
-                n_max_objectives = max([n_max_objectives, obj.controller.metric_data{i,6}]);
+                obj.n_max_objectives = max([obj.n_max_objectives, obj.controller.metric_data{i,6}]);
             end
             
-            obj.c_costs = zeros(n_pts, n_max_objectives);
+            obj.c_costs = zeros(n_pts, obj.n_max_objectives);
             
-            obj.f_ellipsoid_inequality_measure = zeros(n_pts,n_max_objectives);
-            obj.f_big_ellipsoid_inequality_measure = zeros(n_pts,n_max_objectives);
-            obj.f_optimum_is_in_ellipsoid = zeros(n_pts,n_max_objectives);
+            obj.f_ellipsoid_inequality_measure = zeros(n_pts,obj.n_max_objectives);
+            obj.f_big_ellipsoid_inequality_measure = zeros(n_pts,obj.n_max_objectives);
+            obj.f_optimum_is_in_ellipsoid = zeros(n_pts,obj.n_max_objectives);
             obj.f_x_star_in_con_ellipsoid = zeros(n_pts,1);
+            
+            obj.rank_A = zeros(n_pts,1);
+            obj.rank_Ab = zeros(n_pts,1);
+            obj.n = zeros(n_pts,1);
+            obj.strictly_compatible = zeros(n_pts,1);
+            obj.nuclear_norm_A = zeros(n_pts,1);
+            obj.nuclear_norm_Ab = zeros(n_pts,1);
+            obj.nuclear_norm_ratio = zeros(n_pts,1);
+            obj.nuclear_norm_ratio_augmented = zeros(n_pts,1);
             
             for i = 1:n_pts
                 obj.times(i,1) = obj.controller.metric_data{i,1};
@@ -239,6 +269,15 @@ classdef RolloutData < handle
                 obj.c_sum_costs(i,1) = cm.sum_of_costs;
                 n_objectives = obj.controller.metric_data{i,6};
                 obj.c_costs(i,1:n_objectives) = cm.costs_at_x_star;
+                
+                obj.rank_A(i,1) = cm.rank_A;
+                obj.rank_Ab(i,1) = cm.rank_Ab;
+                obj.n(i,1) = cm.n;
+                obj.strictly_compatible(i,1) = cm.strictly_compatible;
+                obj.nuclear_norm_A(i,1) = cm.nuclear_norm_A;
+                obj.nuclear_norm_Ab(i,1) = cm.nuclear_norm_Ab;
+                obj.nuclear_norm_ratio(i,1) = cm.nuclear_norm_ratio;
+                obj.nuclear_norm_ratio_augmented(i,1) = cm.nuclear_norm_ratio_augmented;
                 
                 fm = obj.controller.metric_data{i,3};
                 obj.f_sum_dist(i,1) = fm.sum_center_distance;
@@ -278,13 +317,13 @@ classdef RolloutData < handle
             fig4 = figure();
             fig4.Name = 'Objective Cost Metrics';
             
-            for i = 1:n_max_objectives
-                subplot(n_max_objectives+1,1,i)
+            for i = 1:obj.n_max_objectives
+                subplot(obj.n_max_objectives+1,1,i)
                 plot(obj.times,obj.c_costs(:,i))
                 ylabel(sprintf('cost f_%i',i))
                 xlabel('t (sec)')
             end
-            subplot(n_max_objectives+1,1,n_max_objectives+1)
+            subplot(obj.n_max_objectives+1,1,obj.n_max_objectives+1)
             plot(obj.times,obj.c_sum_costs)
             ylabel('c sum costs')
             xlabel('t (sec)')
@@ -324,13 +363,13 @@ classdef RolloutData < handle
 
             fig7 = figure();
             fig7.Name = 'Ellipsoid Equation Evaluation';
-            for i = 1:n_max_objectives
-                subplot(n_max_objectives+1,1,i)
+            for i = 1:obj.n_max_objectives
+                subplot(obj.n_max_objectives+1,1,i)
                 plot(obj.times,obj.f_ellipsoid_inequality_measure(:,i))
                 ylabel(sprintf('ellipsoid inequality measure f_%i',i))
                 xlabel('t (sec)')
             end
-            subplot(n_max_objectives+1,1,n_max_objectives+1)
+            subplot(obj.n_max_objectives+1,1,obj.n_max_objectives+1)
             plot(obj.times,obj.f_x_star_in_con_ellipsoid)
             ylabel('f x^* in con ellipsoid')
             xlabel('t (sec)')
