@@ -45,6 +45,13 @@ classdef RolloutData < handle
         n_max_objectives
         
         task_acc_des_norms
+        c_distances
+        c_center_distances
+        
+        c_x_star_to_obj_el_center
+        
+        optima_norms;
+        x_star_norms;
             
         robot_fig
     end
@@ -119,7 +126,12 @@ classdef RolloutData < handle
             nuclear_norm_ratio = obj.nuclear_norm_ratio;
             nuclear_norm_ratio_augmented = obj.nuclear_norm_ratio_augmented;
             task_acc_des_norms = obj.task_acc_des_norms;
-            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms');
+            c_distances = obj.c_distances;
+            c_center_distances = obj.c_center_distances;
+            c_x_star_to_obj_el_center = obj.c_x_star_to_obj_el_center;
+            optima_norms = obj.optima_norms;
+            x_star_norms = obj.x_star_norms;
+            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms', 'c_distances', 'c_center_distances', 'c_x_star_to_obj_el_center', 'optima_norms', 'x_star_norms');
         end
         
         function animate(obj, movie_name)
@@ -232,6 +244,9 @@ classdef RolloutData < handle
             obj.f_sum_dist = zeros(n_pts,1);
             obj.f_cen_to_cen_dist = zeros(n_pts,1);
             
+            obj.c_x_star_to_obj_el_center = zeros(n_pts,1);
+
+            
             n_constraints = size(obj.controller.metric_data{1,7},1);
             obj.GX = zeros(n_pts, n_constraints);
             obj.H = zeros(n_pts, n_constraints);
@@ -245,7 +260,13 @@ classdef RolloutData < handle
                 obj.n_max_objectives = max([obj.n_max_objectives, obj.controller.metric_data{i,6}]);
             end
             
+            obj.optima_norms = zeros(n_pts, obj.n_max_objectives);
+            obj.x_star_norms = zeros(n_pts,1);
+            
+            
             obj.c_costs = zeros(n_pts, obj.n_max_objectives);
+            obj.c_distances = zeros(n_pts, obj.n_max_objectives);
+            obj.c_center_distances = zeros(n_pts, obj.n_max_objectives);
             
             obj.f_ellipsoid_inequality_measure = zeros(n_pts,obj.n_max_objectives);
             obj.f_big_ellipsoid_inequality_measure = zeros(n_pts,obj.n_max_objectives);
@@ -267,8 +288,19 @@ classdef RolloutData < handle
                 obj.c_sum_dist(i,1) = cm.sum_distance;
                 obj.c_sum_cent_dist(i,1) = cm.sum_center_distance;
                 obj.c_sum_costs(i,1) = cm.sum_of_costs;
+                
+                obj.c_x_star_to_obj_el_center(i,1) = norm( obj.controller.metric_data{i, 4}.center  - obj.controller.metric_data{i, 9} );
+                
+                n_optima = size(obj.controller.metric_data{i, 2}.optima,2);
+                for k = 1:n_optima
+                    obj.optima_norms(i,k) = norm(obj.controller.metric_data{i, 2}.optima(:,k));
+                end
+                obj.x_star_norms(i,1) = norm(obj.controller.metric_data{i, 2}.x_star);
+                
                 n_objectives = obj.controller.metric_data{i,6};
                 obj.c_costs(i,1:n_objectives) = cm.costs_at_x_star;
+                obj.c_distances(i,1:n_objectives) = cm.distances;
+                obj.c_center_distances(i,1:n_objectives) = cm.center_distances;
                 
                 obj.rank_A(i,1) = cm.rank_A;
                 obj.rank_Ab(i,1) = cm.rank_Ab;

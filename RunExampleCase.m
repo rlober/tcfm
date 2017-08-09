@@ -46,7 +46,9 @@ for i = 1:size(test_examples,2)
             
         case 'incompatible_tasks'
             eePosRef = [0.7; -0.5; -0.1];
-            elPosRef = [0.2; 0.5; 0.4];
+%             elPosRef = [0.2; 0.5; 0.4];
+            elPosRef = [0.1405; 0.3223; 0.2708];
+
             eePositionTask.setReferences(eePosRef, [], []);
             elbowPositionTask.setReferences(elPosRef, [], []);
             jointPosTask = PostureTask(robot, 0.0001, 10.0, 0.2);
@@ -55,12 +57,15 @@ for i = 1:size(test_examples,2)
             
         case 'incompatible_tasks_with_trajectory'
             eePosRef = [0.7; -0.5; -0.1];
-            elPosRef = [0.2; 0.5; 0.4];
+%             elPosRef = [0.2; 0.5; 0.4];
+            elPosRef = [0.1405; 0.3223; 0.2708];
+
             eePositionTask.setDesired(eePosRef);
             elbowPositionTask.setDesired(elPosRef);
             jointPosTask = PostureTask(robot, 0.0001, 10.0, 0.2);
             
             tasks = {eePositionTask, elbowPositionTask, jointPosTask};
+%             tasks = {eePositionTask, jointPosTask};
             
         case 'temporally_incompatible_tasks'
             eePosRef = [-0.5675;   -0.2367;   -0.0144];

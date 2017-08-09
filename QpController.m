@@ -25,6 +25,7 @@ classdef QpController < handle
         metric_data;
         t_old;
         metric_compute_dt;
+        opt_vals;
         
         M;
         n;
@@ -39,6 +40,7 @@ classdef QpController < handle
             obj.using_constraints = using_constraints;
             obj.compute_metrics = compute_metrics;
             obj.metric_data = {};
+            obj.opt_vals = [];
             obj.qp_options = optimset('Algorithm','interior-point-convex', 'Display', 'off');
             obj.tasks = tasks;
             obj.constraints = constraints;
@@ -76,6 +78,7 @@ classdef QpController < handle
                 end
                 
                 tau = obj.solve_qp();
+                obj.opt_vals = [obj.opt_vals; tau'];
                 if ~use_reduced
                     tau = tau(7:end,:);
                 end
