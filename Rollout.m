@@ -19,7 +19,7 @@ end
 if use_position_constraint
     pos_constraint_dt = dt;
     if strcmp(solver, 'ode')
-        pos_constraint_dt = 0.2;
+        pos_constraint_dt = 0.2 / 5;
     end
     positionConstraint = JointPositionConstraint(robot, robot.qlim(:,1), robot.qlim(:,2), pos_constraint_dt);
     constraints = [constraints, {positionConstraint}];

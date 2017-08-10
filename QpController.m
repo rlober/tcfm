@@ -166,8 +166,21 @@ classdef QpController < handle
                 A = [-obj.M, eye(6)];
                 b = obj.n + obj.g;
                 [tau,~,EXITFLAG] = quadprog(obj.Q,obj.p,obj.G,obj.h, A, b,[],[],[], obj.qp_options);
-
                 
+%                 EXITFLAG  = 1;
+%                 cvx_begin 
+%                     variable tau(12)
+%                     minimize(norm(obj.E * tau - obj.f));
+%                     subject to
+%                         A*tau == b;
+%                         obj.G*tau <= obj.h;
+%                 cvx_end
+%                 disp(obj.E)
+%                 disp(obj.f)
+%                 disp(A)
+%                 disp(b)
+%                 disp(obj.G)
+%                 disp(obj.h)
 %                 disp('controller')
 %                 disp(tau')
             end

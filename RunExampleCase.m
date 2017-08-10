@@ -6,11 +6,15 @@ global use_reduced;
 use_reduced = false;
 
 test_examples = {};
-% test_examples = [test_examples, 'joint_positions_feasible'];
-% test_examples = [test_examples, 'joint_positions_infeasible'];
-test_examples = [test_examples, 'compatible_tasks'];
-test_examples = [test_examples, 'incompatible_tasks'];
-test_examples = [test_examples, 'incompatible_tasks_with_trajectory'];
+
+test_examples = [test_examples, 'joint_positions_feasible'];
+test_examples = [test_examples, 'joint_positions_infeasible'];
+test_examples = [test_examples, 'joint_positions_infeasible_with_trajectory'];
+
+% test_examples = [test_examples, 'compatible_tasks'];
+% test_examples = [test_examples, 'incompatible_tasks'];
+% test_examples = [test_examples, 'incompatible_tasks_with_trajectory'];
+
 % test_examples = [test_examples, 'temporally_incompatible_tasks'];
 
 for i = 1:size(test_examples,2)
@@ -25,7 +29,10 @@ for i = 1:size(test_examples,2)
     
     solver = 'euler';
     dt = 0.01;
-    tend = 4;
+    tend = 5;
+    
+%     q_infeas = robot.qlim(:,1)*1.1;
+    q_infeas = robot.qlim(:,1)-(10*pi/180); 
     
     switch example
         case 'joint_positions_feasible'
@@ -36,8 +43,14 @@ for i = 1:size(test_examples,2)
         case 'joint_positions_infeasible'
             qn = qr;
             jointPosTask = PostureTask(robot, 1, 10.0, 0.2);
-            jointPosTask.max_vel = 0.4;
-            jointPosTask.setDesired((robot.qlim(:,1)*1.1));
+            jointPosTask.setReferences(q_infeas, [], []);
+            tasks = {jointPosTask};
+            
+        case 'joint_positions_infeasible_with_trajectory'
+            qn = qr;
+            jointPosTask = PostureTask(robot, 1, 10.0, 0.2);
+            jointPosTask.max_vel = 0.5;% (pi/2)/2; %90deg/2sec
+            jointPosTask.setDesired(q_infeas);
             tasks = {jointPosTask};
             
         case 'compatible_tasks'

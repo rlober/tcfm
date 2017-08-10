@@ -27,6 +27,7 @@ classdef RolloutData < handle
         con_el_volumes 
         c_costs
         f_ellipsoid_inequality_measure
+        f_center_distances
         f_big_ellipsoid_inequality_measure
         f_optimum_is_in_ellipsoid
         f_x_star_in_con_ellipsoid
@@ -131,7 +132,8 @@ classdef RolloutData < handle
             c_x_star_to_obj_el_center = obj.c_x_star_to_obj_el_center;
             optima_norms = obj.optima_norms;
             x_star_norms = obj.x_star_norms;
-            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms', 'c_distances', 'c_center_distances', 'c_x_star_to_obj_el_center', 'optima_norms', 'x_star_norms');
+            f_center_distances = obj.f_center_distances;
+            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms', 'c_distances', 'c_center_distances', 'c_x_star_to_obj_el_center', 'optima_norms', 'x_star_norms', 'f_center_distances');
         end
         
         function animate(obj, movie_name)
@@ -269,6 +271,8 @@ classdef RolloutData < handle
             obj.c_center_distances = zeros(n_pts, obj.n_max_objectives);
             
             obj.f_ellipsoid_inequality_measure = zeros(n_pts,obj.n_max_objectives);
+            obj.f_center_distances = zeros(n_pts,obj.n_max_objectives);
+
             obj.f_big_ellipsoid_inequality_measure = zeros(n_pts,obj.n_max_objectives);
             obj.f_optimum_is_in_ellipsoid = zeros(n_pts,obj.n_max_objectives);
             obj.f_x_star_in_con_ellipsoid = zeros(n_pts,1);
@@ -312,6 +316,7 @@ classdef RolloutData < handle
                 obj.nuclear_norm_ratio_augmented(i,1) = cm.nuclear_norm_ratio_augmented;
                 
                 fm = obj.controller.metric_data{i,3};
+                obj.f_center_distances(i,1:n_objectives) = fm.center_distances;
                 obj.f_sum_dist(i,1) = fm.sum_center_distance;
                 obj.f_cen_to_cen_dist(i,1) = fm.center_to_center_distance;
                 obj.f_ellipsoid_inequality_measure(i,1:n_objectives) = fm.ellipsoid_inequality_measure;

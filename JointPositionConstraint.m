@@ -11,7 +11,7 @@ classdef JointPositionConstraint < Constraint
         function obj = JointPositionConstraint(robot, lb, ub, dt)
             obj = obj@Constraint(robot, lb, ub);
             obj.t_old = 0;
-            obj.dt = dt;
+            obj.dt = dt*5;
         end
         
         function update(obj, t, q, qd)
@@ -31,7 +31,11 @@ classdef JointPositionConstraint < Constraint
                 obj.h = [(2 / (obj.dt^2))*(obj.ub - pred) + Minvgn; -1*((2 / (obj.dt^2))*(obj.lb - pred) + Minvgn)];
             else
                 obj.G = [eye(6), zeros(6,6); -1*eye(6), zeros(6,6)];
-                obj.h = (2 / (obj.dt^2))*[(obj.ub - pred); -1*(obj.lb - pred)];            
+                obj.h = (2 / (obj.dt^2))*[(obj.ub - pred); -1*(obj.lb - pred)];
+%                 disp(q)
+%                 disp(qd)
+%                 disp(pred')
+%                 disp([obj.h(1:6,1)';-1*obj.h(7:end,1)'])
             end
             
             obj.t_old = t;
