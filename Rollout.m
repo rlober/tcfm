@@ -57,7 +57,19 @@ switch solver
         [t, y] = euler_1(@(t,y) dynamics(t,y, use_friction), tspan, y0);
 end
 
-size(t)
+if stop_integration
+    sprintf('An ERROR occured during the integration of the dynamics.')
+    beep_pause_time = 0.2;
+    beep;
+    pause(beep_pause_time);
+    beep;
+    pause(beep_pause_time);
+    beep;
+else
+    sprintf('The dynamics integration completed successfully.')
+    beep;
+end
+
 % [t, y] = simpleDynamicsIntegration( use_friction, tspan, y0 );
 q_traj = y(:,1:robot.n);
 

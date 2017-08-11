@@ -30,6 +30,8 @@ classdef EETask < Task
            vel_real = (obj.R.jacob0(q)*qd');
            vel_real = vel_real(1:3,1);
            
+           obj.real_pos = [obj.real_pos; pos_real'];
+           
            pos_err = obj.pos_ref - pos_real;
            vel_err = obj.vel_ref - vel_real;
            acc_des = obj.acc_ref + obj.kp*pos_err + obj.kd*vel_err;

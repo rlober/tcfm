@@ -27,6 +27,7 @@ classdef Task < handle
         desired_acceleration_norms;
         max_vel;
         qp_options;
+        real_pos;
     end
     
     methods
@@ -39,6 +40,7 @@ classdef Task < handle
             obj.references = {};
             obj.desired_accelerations = {};
             obj.desired_acceleration_norms = {};
+            obj.real_pos=[];
             obj.max_vel = 0.2;
             obj.qp_options = optimset('Algorithm','interior-point', 'Display', 'off');
         end

@@ -7,15 +7,15 @@ use_reduced = false;
 
 test_examples = {};
 
-test_examples = [test_examples, 'joint_positions_feasible'];
-test_examples = [test_examples, 'joint_positions_infeasible'];
-test_examples = [test_examples, 'joint_positions_infeasible_with_trajectory'];
+% test_examples = [test_examples, 'joint_positions_feasible'];
+% test_examples = [test_examples, 'joint_positions_infeasible'];
+% test_examples = [test_examples, 'joint_positions_infeasible_with_trajectory'];
 
 % test_examples = [test_examples, 'compatible_tasks'];
 % test_examples = [test_examples, 'incompatible_tasks'];
 % test_examples = [test_examples, 'incompatible_tasks_with_trajectory'];
 
-% test_examples = [test_examples, 'temporally_incompatible_tasks'];
+test_examples = [test_examples, 'temporally_incompatible_tasks'];
 
 for i = 1:size(test_examples,2)
     clearvars -except test_examples i compute_metrics use_reduced
@@ -29,7 +29,7 @@ for i = 1:size(test_examples,2)
     
     solver = 'euler';
     dt = 0.01;
-    tend = 5;
+    tend = 8;
     
 %     q_infeas = robot.qlim(:,1)*1.1;
     q_infeas = robot.qlim(:,1)-(10*pi/180); 
