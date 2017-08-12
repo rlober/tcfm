@@ -25,8 +25,9 @@ classdef QpController < handle
         metric_data;
         t_old;
         metric_compute_dt;
-        opt_vals;
-        
+        save_controller_optima;
+        prioritized_optima;
+        controller_optima;
         M;
         n;
         g;
@@ -40,12 +41,14 @@ classdef QpController < handle
             obj.using_constraints = using_constraints;
             obj.compute_metrics = compute_metrics;
             obj.metric_data = {};
-            obj.opt_vals = [];
+            obj.prioritized_optima = [];
+            obj.controller_optima = [];
             obj.qp_options = optimset('Algorithm','interior-point-convex', 'Display', 'off');
             obj.tasks = tasks;
             obj.constraints = constraints;
             obj.t_old = 0.0;
             obj.metric_compute_dt = 0.1;
+            obj.save_controller_optima = false;
         end
         
         function tau = zero_torque(obj, t, q, qd)
@@ -74,11 +77,16 @@ classdef QpController < handle
                         
                         obj.metric_data = [obj.metric_data; {t, compatibility_metrics, feasibility_metrics, obj_el, con_el, n_objectives, obj.G, obj.h, x_star}];
                         obj.t_old = t;
+                        obj.prioritized_optima = [obj.prioritized_optima; x_star'];
+                        obj.save_controller_optima = true;
                     end
                 end
                 
                 tau = obj.solve_qp();
-                obj.opt_vals = [obj.opt_vals; tau'];
+                if obj.save_controller_optima
+                    obj.controller_optima = [obj.controller_optima; tau'];
+                    obj.save_controller_optima = false;
+                end
                 if ~use_reduced
                     tau = tau(7:end,:);
                 end

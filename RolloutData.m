@@ -49,12 +49,13 @@ classdef RolloutData < handle
         c_distances
         c_center_distances
         
-        c_x_star_to_obj_el_center
+        c_x_star_to_obj_el_center;
+        
         
         optima_norms;
         x_star_norms;
         f_el_center_norms;
-        robot_fig
+        robot_fig;
     end
     
     methods
@@ -138,8 +139,9 @@ classdef RolloutData < handle
             for i = 1:size(obj.controller.tasks,2)
                 real_positions = [real_positions, obj.controller.tasks{1,i}.real_pos];
             end
-            
-            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms', 'c_distances', 'c_center_distances', 'c_x_star_to_obj_el_center', 'optima_norms', 'x_star_norms', 'f_center_distances', 'f_el_center_norms', 'real_positions');
+            controller_optima = obj.controller.controller_optima;
+            prioritized_optima = obj.controller.prioritized_optima;
+            save(filename, 't_traj', 'q_traj', 'tau_traj', 'tcp_traj', 'task_ref_data', 'step', 'n_tasks', 'torque_limit', 'times', 'c_sum_dist', 'c_sum_cent_dist', 'c_sum_costs', 'f_sum_dist', 'f_cen_to_cen_dist', 'GX', 'H', 'obj_el_volumes', 'con_el_volumes', 'c_costs', 'f_ellipsoid_inequality_measure', 'f_optimum_is_in_ellipsoid', 'f_x_star_in_con_ellipsoid', 'q_upper', 'q_lower', 'f_big_ellipsoid_inequality_measure', 'rank_A', 'rank_Ab', 'n', 'strictly_compatible', 'nuclear_norm_A', 'nuclear_norm_Ab', 'nuclear_norm_ratio', 'nuclear_norm_ratio_augmented', 'task_acc_des_norms', 'c_distances', 'c_center_distances', 'c_x_star_to_obj_el_center', 'optima_norms', 'x_star_norms', 'f_center_distances', 'f_el_center_norms', 'real_positions', 'controller_optima', 'prioritized_optima');
         end
         
         function animate(obj, movie_name)
