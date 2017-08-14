@@ -11,3 +11,4 @@ feas = load('./example_data_sets/matlab_object-joint_positions_feasible');
 infeas = load('./example_data_sets/matlab_object-joint_positions_infeasible');
 traj_infeas = load('./example_data_sets/matlab_object-joint_positions_infeasible_with_trajectory');
 
+temporal = load('./example_data_sets/matlab_object-temporally_incompatible_tasks');

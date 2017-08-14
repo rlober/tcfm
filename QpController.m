@@ -31,6 +31,7 @@ classdef QpController < handle
         M;
         n;
         g;
+        use_ellipsoid_regularization;
     end
     
     methods
@@ -49,6 +50,7 @@ classdef QpController < handle
             obj.t_old = 0.0;
             obj.metric_compute_dt = 0.1;
             obj.save_controller_optima = false;
+            obj.use_ellipsoid_regularization = false;
         end
         
         function tau = zero_torque(obj, t, q, qd)
@@ -156,13 +158,22 @@ classdef QpController < handle
         function tau = solve_qp(obj)
             global use_reduced;
             
-            %             reg_weight = 0.01;
+%             reg_weight = 0.01;
 %             Ereg = sqrt(reg_weight)*inv(obj.R.inertia(q))*eye(obj.R.n);
-            reg_weight = 0.00001;
+            
+            
+            if obj.use_ellipsoid_regularization
+                reg_weight = 0.0000001;
+                c = FeasibilityEllipsoidCenter(obj.G, obj.h);
+            else
+                reg_weight = 0.00001;
+                c = zeros(obj.R.n*2,1);
+            end
+            
             Ereg = sqrt(reg_weight)*eye(obj.R.n*2);
-%             Ereg(5,5) = 0.1;
+
             obj.E = [obj.E; Ereg];
-            obj.f = [obj.f; zeros(obj.R.n*2,1)];
+            obj.f = [obj.f; c];
              
             obj.Q = (obj.E')*obj.E;
             obj.p = -(obj.E'*obj.f)';

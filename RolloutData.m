@@ -174,6 +174,37 @@ classdef RolloutData < handle
             disp('Animation Finished')
         end
         
+        function take_snapshots(obj, foldername, eePosRef, elPosRef)
+            %% Plot results
+            close all;
+            obj.robot_fig = figure();
+            obj.robot.plot(obj.q_traj(1,:));
+
+            
+            obj.robot_fig.Position = [0,0,1,1];
+            ax = gca();
+            ax.Position = [0,0,1,1];
+            
+            hold on;
+            sphere_radius = 0.05;
+            if (size(eePosRef, 1) == 3) && (size(elPosRef, 1) == 3)
+                plot_sphere(eePosRef, sphere_radius, 'blue');
+                plot_sphere(elPosRef, sphere_radius, 'red');
+                colors = {'b', 'r'};
+                for i = 1:2
+                    pos= obj.task_ref_data{i,2};
+                    Xs = pos(:,1);
+                    Ys = pos(:,2);
+                    Zs = pos(:,3);
+                    plot3(Xs,Ys,Zs, colors{1,i}, 'LineWidth', 4);
+                end
+            end
+            hold off;
+            
+            obj.robot.plot(obj.q_traj(1:100:end,:), 'delay', 0.01, 'movie', foldername);
+            
+        end
+        
         
         function plot_joint_positions(obj)
             %% Plot Joint Positions and Torques

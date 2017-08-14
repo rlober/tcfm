@@ -17,6 +17,8 @@ test_examples = {};
 
 test_examples = [test_examples, 'temporally_incompatible_tasks'];
 
+% test_examples = [test_examples, 'ellipsoid_regularization'];
+
 for i = 1:size(test_examples,2)
     clearvars -except test_examples i compute_metrics use_reduced
     clc;
@@ -30,8 +32,8 @@ for i = 1:size(test_examples,2)
     solver = 'euler';
     dt = 0.01;
     tend = 8;
+    use_ellipsoid_regularization = false;
     
-%     q_infeas = robot.qlim(:,1)*1.1;
     q_infeas = robot.qlim(:,1)-(10*pi/180); 
     
     switch example
@@ -93,6 +95,20 @@ for i = 1:size(test_examples,2)
             jointPosTask = PostureTask(robot, 0.0001, 10.0, 0.2);
             
             tasks = {eePositionTask, elbowPositionTask, jointPosTask};
+            
+        case 'ellipsoid_regularization'
+            eePosRef = [-0.5675;   -0.2367;   -0.0144];
+            elPosRef = [-0.3229;   -0.0539;    0.2910];
+            eePositionTask.max_vel = 0.2;
+            elbowPositionTask.max_vel = 0.2;
+            
+            eePositionTask.setDesired(eePosRef);
+            elbowPositionTask.setDesired(elPosRef);
+            jointPosTask = PostureTask(robot, 0.0001, 10.0, 0.2);
+            
+            tasks = {eePositionTask, elbowPositionTask};
+            
+            use_ellipsoid_regularization = true;
     end
     
     
@@ -102,7 +118,7 @@ for i = 1:size(test_examples,2)
     use_torque_constraint = true;
     use_position_constraint = true;
     
-    raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver);
+    raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver, use_ellipsoid_regularization);
     
     %%
     rollout_data = RolloutData(raw_data);

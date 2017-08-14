@@ -1,4 +1,4 @@
-function rollout_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver)
+function rollout_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver, use_ellipsoid_regularization)
 
 global robot;
 
@@ -29,6 +29,7 @@ end
 
 global controller;
 controller = QpController(tasks, constraints, using_constraints, compute_metrics, torque_limit);
+controller.use_ellipsoid_regularization = use_ellipsoid_regularization;
 global torques;
 torques = [];
 global torque_times;
