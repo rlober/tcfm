@@ -26,6 +26,9 @@ classdef PostureTask < Task
            pos_real = q';
            vel_real = qd';
            
+           obj.real_pos = [obj.real_pos; pos_real'];
+
+           
            pos_err = obj.pos_ref - pos_real;
            vel_err = obj.vel_ref - vel_real;
            acc_des = obj.acc_ref + obj.kp*pos_err + obj.kd*vel_err;

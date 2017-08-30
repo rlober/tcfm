@@ -133,7 +133,7 @@ for i = 1:n_tasks
    end
 end
 
-rollout_data = {robot, controller, t_traj, q_traj, tau_traj, tcp_traj, task_ref_data, step, torque_limit, task_acc_des_norms};
+rollout_data = {robot, controller, t_traj, q_traj, tau_traj, tcp_traj, task_ref_data, step, torque_limit, task_acc_des_norms, tend};
 end
 
 

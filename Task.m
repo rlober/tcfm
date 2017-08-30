@@ -43,6 +43,7 @@ classdef Task < handle
             obj.real_pos=[];
             obj.max_vel = 0.2;
             obj.qp_options = optimset('Algorithm','interior-point', 'Display', 'off');
+            obj.pointToPointDuration = 0;
         end
         
         
