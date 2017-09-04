@@ -14,6 +14,9 @@ test_examples = [test_examples, 'incompatible_tasks_with_trajectory'];
 
 test_examples = [test_examples, 'temporally_incompatible_tasks'];
 
+test_examples = [test_examples, 'temporally_incompatible_tasks_mf_comp_feas'];
+
+
 for i = 1:size(test_examples,2)
     example = test_examples{i};
     rd = load(strcat('./example_data_sets/matlab_object-',example));
