@@ -21,6 +21,8 @@ test_examples = [test_examples, 'ellipsoid_regularization'];
 
 test_examples = [test_examples, 'temporally_incompatible_tasks_mf_comp_feas'];
 
+
+
 for i = 1:size(test_examples,2)
     clearvars -except test_examples i compute_metrics use_reduced
     clc;
@@ -138,6 +140,9 @@ for i = 1:size(test_examples,2)
             jointPosTask = PostureTask(robot, 0.0001, 10.0, 0.2);
 
             tasks = {eePositionTask, elbowPositionTask, jointPosTask};
+            
+       
+            
     end
     
     

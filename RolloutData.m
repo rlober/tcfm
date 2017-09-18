@@ -58,6 +58,12 @@ classdef RolloutData < handle
         robot_fig;
         
         tend;
+        
+        j_trac;
+        j_goal;
+        j_tp;
+        j_energy;
+        j_perf;
     end
     
     methods
@@ -94,6 +100,33 @@ classdef RolloutData < handle
             elPosRef = [-0.3229;   -0.0539;    0.2910];
             plot_sphere(eePosRef, sphere_radius, 'blue');
             plot_sphere(elPosRef, sphere_radius, 'red');
+        end
+        
+        function j_perf = performance_cost(obj)
+            obj.j_tp = 0.0;
+            obj.j_trac = [];
+            obj.j_goal = [];
+            for i = 1:size(obj.controller.tasks,2)
+                task_trajectory_duration = obj.tend;
+                if obj.controller.tasks{1,i}.pointToPointDuration ~= 0
+                    task_trajectory_duration = obj.controller.tasks{1,i}.pointToPointDuration;
+                end
+                track_err = obj.controller.tasks{1,i}.real_pos - obj.task_ref_data{i,2};
+                track_err_norm_squared = norms(track_err,2,2).^2;
+                track_cost = sum(track_err_norm_squared);
+                
+                goal_err = obj.controller.tasks{1,i}.real_pos - repmat(obj.task_ref_data{i,2}(end,:), size(obj.controller.tasks{1,i}.real_pos,1),1);
+                goal_err_norm_squared = norms(goal_err,2,2).^2;
+                goal_cost = sum( (obj.task_ref_data{i,1}/task_trajectory_duration) .* goal_err_norm_squared );
+                
+                obj.j_trac = [obj.j_trac, track_cost];
+                obj.j_goal = [obj.j_goal, goal_cost];
+                obj.j_tp = obj.j_tp + obj.controller.tasks{1,i}.weight*(track_cost + goal_cost);
+            end
+            obj.j_energy = sum(norms(obj.tau_traj(1:end-1,:), 2, 2).^2);
+            beta = 1e-4;
+            obj.j_perf = (obj.j_tp + beta * obj.j_energy)/obj.tend;
+            j_perf = obj.j_perf;
         end
         
         function save_variables(obj, filename)

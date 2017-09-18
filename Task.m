@@ -16,6 +16,7 @@ classdef Task < handle
         vel_ref;
         pos_ref;
         using_trajectory;
+        using_spline_trajectory;
         pos_des;
         start_pos;
         alpha;
@@ -28,6 +29,7 @@ classdef Task < handle
         max_vel;
         qp_options;
         real_pos;
+        spline_traj;
     end
     
     methods
@@ -50,6 +52,13 @@ classdef Task < handle
         function update(obj, t, q, qd)
             if obj.using_trajectory
                 obj.minJerkTrajectory(t, q);
+            end
+            
+            if obj.using_spline_trajectory
+                [obj.pos_ref, obj.vel_ref, obj.acc_ref] = obj.spline_traj.get_references(t);
+%                 obj.pos_ref
+%                 obj.vel_ref
+%                 obj.acc_ref
             end
             
             obj.J = obj.get_jacobian(q);
@@ -104,6 +113,12 @@ classdef Task < handle
         function setDesired(obj, pos)
            obj.using_trajectory = true;
            obj.pos_des = pos;
+           obj.first_traj_call = true;
+        end
+        
+        function setDesiredSpline(obj, times, waypoints)
+           obj.using_spline_trajectory = true;
+           obj.spline_traj = SplineTrajectory(times, waypoints);
            obj.first_traj_call = true;
         end
         
