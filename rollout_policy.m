@@ -41,6 +41,6 @@ raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque
 rollout_data = RolloutData(raw_data);
 save(strcat('./rollouts/matlab_object-',int2str(rollout_number)), 'rollout_data');
 
-cost = rollout_data.performance_cost() / j_perf_0;
+cost = rollout_data.performance_cost() / j_perf_0
 
 end
