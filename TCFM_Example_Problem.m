@@ -42,9 +42,12 @@ rollout_data = RolloutData(raw_data);
 save(strcat('./rollouts/matlab_object-',int2str(rollout_number)), 'rollout_data');
 
 %%
+% 
+% n_samples = 8;
+% step_size = size(rollout_data.task_ref_data{1,1},1) / n_samples;
 
-n_samples = 8;
-step_size = size(rollout_data.task_ref_data{1,1},1) / n_samples;
+middle_idx = size(rollout_data.task_ref_data{1,1},1) / 2;
+
 
 global ee_times;
 global ee_waypoints;
@@ -52,20 +55,28 @@ global el_times;
 global el_waypoints;
 
 
-ee_times = rollout_data.task_ref_data{1,1}(1:step_size:end,1)';
-ee_waypoints = rollout_data.task_ref_data{1,2}(1:step_size:end,:)';
+ee_times = [rollout_data.task_ref_data{1,1}(1,1),rollout_data.task_ref_data{1,1}(middle_idx,1),rollout_data.task_ref_data{1,1}(end,1)];
+ee_waypoints = [rollout_data.task_ref_data{1,2}(1,:)',rollout_data.task_ref_data{1,2}(middle_idx,:)',rollout_data.task_ref_data{1,2}(end,:)'];
 
-el_times = rollout_data.task_ref_data{2,1}(1:step_size:end,1)';
-el_waypoints = rollout_data.task_ref_data{2,2}(1:step_size:end,:)';
+el_times = [rollout_data.task_ref_data{2,1}(1,1),rollout_data.task_ref_data{2,1}(middle_idx,1),rollout_data.task_ref_data{2,1}(end,1)];
+el_waypoints = [rollout_data.task_ref_data{2,2}(1,:)',rollout_data.task_ref_data{2,2}(middle_idx,:)',rollout_data.task_ref_data{2,2}(end,:)'];
+
+% 
+% el_times = rollout_data.task_ref_data{2,1}(1:step_size:end,1)';
+% el_waypoints = rollout_data.task_ref_data{2,2}(1:step_size:end,:)';
 
 
 global j_perf_0;
-theta_0 = [reshape(ee_waypoints(:,3:end-2),12,1); reshape(el_waypoints(:,3:end-2),12,1)];
+% theta_0 = [reshape(ee_waypoints(:,3:end-2),12,1); reshape(el_waypoints(:,3:end-2),12,1)];
+
+theta_0 = [ee_waypoints(:,2); el_waypoints(:,2)];
+
+
 j_perf_0 = rollout_data.performance_cost();
 
 
 %%
 % rollout_policy(theta_0);
 
-options = struct('MaxIter',10, 'PopSize', 10);%,'TolFun',1e-3)
-[xmin, fmin, counteval, stopflag, out, bestever] = cmaes('rollout_policy', theta_0, 10*var(theta_0), options);
+options = struct('MaxIter',1, 'PopSize', 10);%,'TolFun',1e-3)
+[xmin, fmin, counteval, stopflag, out, bestever] = cmaes('rollout_policy', theta_0, var(theta_0), options);

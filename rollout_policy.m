@@ -23,11 +23,17 @@ eePositionTask = EETask(robot, 1.0, 10.0, 0.2);
 elbowPositionTask = ElbowPositionTask(robot, 1.0, 10.0, 0.2);
 jointPosTask = PostureTask(robot, 0.0001, 10.0, 0.2);
 
+% ee_wpts = ee_waypoints;
+% ee_wpts(:,3:end-2) = reshape(params(1:12,1), 3, 4);
+% 
+% el_wpts = el_waypoints;
+% el_wpts(:,3:end-2) = reshape(params(13:end,1), 3, 4);
+
 ee_wpts = ee_waypoints;
-ee_wpts(:,3:end-2) = reshape(params(1:12,1), 3, 4);
+ee_wpts(:,2) = params(1:3,1);
 
 el_wpts = el_waypoints;
-el_wpts(:,3:end-2) = reshape(params(13:end,1), 3, 4);
+el_wpts(:,2) = params(4:end,1);
 
 eePositionTask.max_vel = 0.2;
 elbowPositionTask.max_vel = 0.2;
