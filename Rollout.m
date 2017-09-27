@@ -34,6 +34,7 @@ global torques;
 torques = [];
 global torque_times;
 torque_times = [];
+% global dont_print_time;
 %% Simulate execution
 % time scale
 step=dt;
@@ -55,7 +56,13 @@ switch solver
     case 'rk'
         [t, y] = runge_kutta_4(@(t,y) dynamics(t,y, use_friction), tspan, y0);
     case 'euler'
+%         if dont_print_time
+%             fprintf('start ')
+%         end
         [t, y] = euler_1(@(t,y) dynamics(t,y, use_friction), tspan, y0);
+%         if dont_print_time
+%             fprintf(' done\n')
+%         end
 end
 
 if stop_integration

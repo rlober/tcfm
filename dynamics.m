@@ -10,6 +10,8 @@ global dont_print_time;
 
 if ~dont_print_time
     fprintf('t = %2.3f\n',t)
+else
+%     fprintf('|')
 end
     n_dof = robot.n;
     q = y(1:n_dof,:)';

@@ -51,8 +51,8 @@ classdef SplineTrajectory < handle
         function [pos, vel, acc] = get_references(obj, new_time)
             if new_time > obj.max_time
                 pos = obj.last_pos;
-                vel = obj.last_vel;
-                acc = obj.last_acc;
+                vel = obj.z_vec;
+                acc = obj.z_vec;
             else
                 pos = obj.interpolate(new_time);
                 [vel, acc] = obj.derive_vel_and_acc(new_time, pos);

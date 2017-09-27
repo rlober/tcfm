@@ -201,12 +201,13 @@ classdef RolloutData < handle
             obj.visualize_task_references();
             
             hold on;
-            for i = 1:obj.n_tasks
+            colors = {'b', 'r'};
+            for i = 1:obj.n_tasks-1
                 pos= obj.task_ref_data{i,2};
                 Xs = pos(:,1);
                 Ys = pos(:,2);
                 Zs = pos(:,3);
-                plot3(Xs,Ys,Zs);
+                plot3(Xs,Ys,Zs, colors{1,i}, 'LineWidth', 4);
             end
             hold off;
             if exist('movie_name', 'var')

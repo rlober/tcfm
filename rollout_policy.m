@@ -6,6 +6,7 @@ global el_waypoints;
 global j_perf_0;
 global rollout_number;
 global robot;
+global test_dir;
 
 rollout_number = rollout_number + 1;
 fprintf('Rollout No.:%i\t', rollout_number)
@@ -46,11 +47,11 @@ tasks = {eePositionTask, elbowPositionTask, jointPosTask};
 raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver, use_ellipsoid_regularization);
 
 rollout_data = RolloutData(raw_data);
-save(strcat('./rollouts/matlab_object-',int2str(rollout_number)), 'rollout_data');
+save( strcat( test_dir, '/matlab_object-', int2str(rollout_number) ), 'rollout_data');
 
 cost = rollout_data.performance_cost() / j_perf_0;
 fprintf('Cost:%2.3f\n', cost)
 
-rollout_data.animate()
+% rollout_data.animate()
 
 end

@@ -56,9 +56,10 @@ classdef Task < handle
             
             if obj.using_spline_trajectory
                 [obj.pos_ref, obj.vel_ref, obj.acc_ref] = obj.spline_traj.get_references(t);
-%                 obj.pos_ref
-%                 obj.vel_ref
-%                 obj.acc_ref
+%                 disp('EE')
+%                 disp(obj.pos_ref')
+%                 disp(obj.vel_ref)
+%                 disp(obj.acc_ref)
             end
             
             obj.J = obj.get_jacobian(q);

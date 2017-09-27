@@ -47,7 +47,13 @@ classdef ElbowPositionTask < Task
             if obj.using_trajectory
                 obj.minJerkTrajectory(t, q);
             end
-            
+            if obj.using_spline_trajectory
+                [obj.pos_ref, obj.vel_ref, obj.acc_ref] = obj.spline_traj.get_references(t);
+%                 disp('Elbow')
+%                 disp(obj.pos_ref')
+%                 disp(obj.vel_ref)
+%                 disp(obj.acc_ref)
+            end
             global use_reduced;
             if ~use_reduced
                 M_big = obj.R.inertia(q);

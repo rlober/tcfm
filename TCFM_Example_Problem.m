@@ -9,6 +9,10 @@ rollout_number = 0;
 global dont_print_time;
 dont_print_time = true;
 
+global test_dir;
+test_dir = strcat('rollouts/',datestr(now));
+mkdir(test_dir);
+
 torque_limit = [100 80 60 40 20 10];
 use_torque_constraint = true;
 use_position_constraint = true;
@@ -39,14 +43,14 @@ tasks = {eePositionTask, elbowPositionTask, jointPosTask};
 raw_data = Rollout(tasks, use_torque_constraint, use_position_constraint, torque_limit, compute_metrics, dt, tend, solver, use_ellipsoid_regularization);
 
 rollout_data = RolloutData(raw_data);
-save(strcat('./rollouts/matlab_object-',int2str(rollout_number)), 'rollout_data');
+save( strcat( test_dir, '/matlab_object-', int2str(rollout_number) ), 'rollout_data');
 
 %%
 % 
 % n_samples = 8;
 % step_size = size(rollout_data.task_ref_data{1,1},1) / n_samples;
 
-middle_idx = size(rollout_data.task_ref_data{1,1},1) / 2;
+middle_idx = round(size(rollout_data.task_ref_data{1,1},1) / 2);
 
 
 global ee_times;
@@ -55,11 +59,11 @@ global el_times;
 global el_waypoints;
 
 
-ee_times = [rollout_data.task_ref_data{1,1}(1,1),rollout_data.task_ref_data{1,1}(middle_idx,1),rollout_data.task_ref_data{1,1}(end,1)];
-ee_waypoints = [rollout_data.task_ref_data{1,2}(1,:)',rollout_data.task_ref_data{1,2}(middle_idx,:)',rollout_data.task_ref_data{1,2}(end,:)'];
+ee_times = [rollout_data.task_ref_data{1,1}(1,1),rollout_data.task_ref_data{1,1}(300,1),rollout_data.task_ref_data{1,1}(600,1)];
+ee_waypoints = [rollout_data.task_ref_data{1,2}(1,:)',rollout_data.task_ref_data{1,2}(300,:)',rollout_data.task_ref_data{1,2}(600,:)'];
 
-el_times = [rollout_data.task_ref_data{2,1}(1,1),rollout_data.task_ref_data{2,1}(middle_idx,1),rollout_data.task_ref_data{2,1}(end,1)];
-el_waypoints = [rollout_data.task_ref_data{2,2}(1,:)',rollout_data.task_ref_data{2,2}(middle_idx,:)',rollout_data.task_ref_data{2,2}(end,:)'];
+el_times = [rollout_data.task_ref_data{2,1}(1,1),rollout_data.task_ref_data{2,1}(103,1),rollout_data.task_ref_data{2,1}(306,1)];
+el_waypoints = [rollout_data.task_ref_data{2,2}(1,:)',rollout_data.task_ref_data{2,2}(103,:)',rollout_data.task_ref_data{2,2}(306,:)'];
 
 % 
 % el_times = rollout_data.task_ref_data{2,1}(1:step_size:end,1)';
@@ -76,7 +80,14 @@ j_perf_0 = rollout_data.performance_cost();
 
 
 %%
-% rollout_policy(theta_0);
+% rollout_policy(theta_0)
 
-options = struct('MaxIter',1, 'PopSize', 10);%,'TolFun',1e-3)
-[xmin, fmin, counteval, stopflag, out, bestever] = cmaes('rollout_policy', theta_0, var(theta_0), options);
+options = struct('MaxIter',10, 'PopSize', 10);%,'TolFun',1e-3)
+[xmin, fmin, counteval, stopflag, out, bestever] = cmaes('rollout_policy', theta_0, 2*var(theta_0), options);
+
+
+%%
+rollout_policy(xmin)
+
+%%
+save(strcat(test_dir, '/workspace'));
