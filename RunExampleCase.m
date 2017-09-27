@@ -4,6 +4,7 @@ clc
 compute_metrics = true;
 global use_reduced;
 use_reduced = false;
+global qn;
 
 test_examples = {};
 
@@ -24,7 +25,7 @@ test_examples = [test_examples, 'temporally_incompatible_tasks_mf_comp_feas'];
 
 
 for i = 1:size(test_examples,2)
-    clearvars -except test_examples i compute_metrics use_reduced
+    clearvars -except test_examples i compute_metrics use_reduced qn
     clc;
     example = test_examples{i};
     run('load_robot.m');
@@ -37,7 +38,6 @@ for i = 1:size(test_examples,2)
     dt = 0.01;
     tend = 4;
     use_ellipsoid_regularization = false;
-    
     q_infeas = robot.qlim(:,1)-(10*pi/180); 
     q_N = [ 0    0.7854   -3.1416         0    0.7854         0];
     q_V = [0    1.5708   -1.5708         0         0         0];
