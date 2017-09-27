@@ -6,6 +6,9 @@ global use_reduced;
 use_reduced = false;
 global rollout_number;
 rollout_number = 0;
+global dont_print_time;
+dont_print_time = true;
+
 torque_limit = [100 80 60 40 20 10];
 use_torque_constraint = true;
 use_position_constraint = true;
@@ -62,5 +65,7 @@ j_perf_0 = rollout_data.performance_cost();
 
 
 %%
-rollout_policy(theta_0);
+% rollout_policy(theta_0);
 
+options = struct('MaxIter',10, 'PopSize', 10);%,'TolFun',1e-3)
+[xmin, fmin, counteval, stopflag, out, bestever] = cmaes('rollout_policy', theta_0, 10*var(theta_0), options);

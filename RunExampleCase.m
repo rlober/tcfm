@@ -4,6 +4,8 @@ clc
 compute_metrics = true;
 global use_reduced;
 use_reduced = false;
+global dont_print_time;
+dont_print_time = false;
 
 test_examples = {};
 
