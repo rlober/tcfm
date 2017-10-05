@@ -82,7 +82,7 @@ j_perf_0 = rollout_data.performance_cost();
 %%
 % rollout_policy(theta_0)
 
-options = struct('MaxIter',10, 'PopSize', 10);%,'TolFun',1e-3)
+options = struct('MaxIter',30, 'PopSize', 10, 'TolFun',5e-2);
 [xmin, fmin, counteval, stopflag, out, bestever] = cmaes('rollout_policy', theta_0, 2*var(theta_0), options);
 
 
