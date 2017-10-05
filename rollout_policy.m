@@ -7,10 +7,10 @@ global j_perf_0;
 global rollout_number;
 global robot;
 global test_dir;
-
+global compute_metrics;
 rollout_number = rollout_number + 1;
 fprintf('Rollout No.:%i\t', rollout_number)
-compute_metrics = false;
+compute_metrics = true;
 
 torque_limit = [100 80 60 40 20 10];
 use_torque_constraint = true;
