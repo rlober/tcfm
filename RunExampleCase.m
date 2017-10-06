@@ -10,19 +10,19 @@ dont_print_time = false;
 
 test_examples = {};
 
-test_examples = [test_examples, 'joint_positions_feasible'];
-test_examples = [test_examples, 'joint_positions_infeasible'];
-test_examples = [test_examples, 'joint_positions_infeasible_with_trajectory'];
-
-test_examples = [test_examples, 'compatible_tasks'];
-test_examples = [test_examples, 'incompatible_tasks'];
-test_examples = [test_examples, 'incompatible_tasks_with_trajectory'];
+% test_examples = [test_examples, 'joint_positions_feasible'];
+% test_examples = [test_examples, 'joint_positions_infeasible'];
+% test_examples = [test_examples, 'joint_positions_infeasible_with_trajectory'];
+% 
+% test_examples = [test_examples, 'compatible_tasks'];
+% test_examples = [test_examples, 'incompatible_tasks'];
+% test_examples = [test_examples, 'incompatible_tasks_with_trajectory'];
 
 test_examples = [test_examples, 'temporally_incompatible_tasks'];
 
-test_examples = [test_examples, 'ellipsoid_regularization'];
+% test_examples = [test_examples, 'ellipsoid_regularization'];
 
-test_examples = [test_examples, 'temporally_incompatible_tasks_mf_comp_feas'];
+% test_examples = [test_examples, 'temporally_incompatible_tasks_mf_comp_feas'];
 
 
 
