@@ -11,6 +11,11 @@ Also, matlab is not my strongest language so if you see something very wierd (in
 ## Dependencies 
 
 ### Robotics Toolbox 
+
+**WARNING:** Only tested with version `9.10` [download here](http://petercorke.com/wordpress/?ddownload=383)
+
+Known issues with versions greater than `9.10`, see https://github.com/rlober/tcfm/issues/1.
+
 http://petercorke.com/wordpress/toolboxes/robotics-toolbox#Downloading_the_Toolbox
 
 If you install with the zip file then you have to run `rvctools/startup_rvc.m` to put the toolbox in your matlab path. 
